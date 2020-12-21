@@ -1,6 +1,6 @@
 # Japanese Linguist | Software Engineer 
 
-![coverimg](me_resized.png)
+![coverimg](me_small.png)
 
 
 My interests:
