@@ -14,7 +14,7 @@ My interests:
   * Theoretical Computer Science
   * Computer Graphics    
 
-JLPT N1 certified | Proficient Guitarist | Qualified Scuba Diver
+JLPT N1 certified / Proficient Guitarist / Qualified Scuba Diver
 
 Proficient in: 
  * C
