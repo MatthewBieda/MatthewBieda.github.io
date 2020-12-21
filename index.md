@@ -4,6 +4,7 @@
 | Sheffield University | Queen Mary University of London 
 |:--------             |:-------:
 | Undergraduate        | Masters   
+| Japanese Studies     | Computer Science   
 | 2:1 Honors (68%)     | Distinction (80%)     
 
 
