@@ -1,7 +1,8 @@
 # Japanese Linguist | Software Engineer 
 
-My interests:
-  * Machine Translation
-  * Japanese --> English Localization 
-  * Theoretical Computer Science
-  * Computer Graphics
+An image: ![img](img/me_resized.jpg)               My interests:
+                                                 * Machine Translation
+                                                 * Japanese --> English Localization 
+                                                 * Theoretical Computer Science
+                                                 * Computer Graphics    
+
