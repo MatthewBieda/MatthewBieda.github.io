@@ -1,6 +1,8 @@
 # Japanese Linguist | Software Engineer 
 ![coverimg](me_small.png) 
 
+Education:
+
 | Sheffield University | Queen Mary University of London 
 |:--------             |:-------:
 | Undergraduate        | Masters   
