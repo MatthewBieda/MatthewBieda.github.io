@@ -2,6 +2,6 @@
 
 My interests:
   * Machine Translation
-  * Japanese --> English localization 
+  * Japanese --> English Localization 
   * Theoretical Computer Science
   * Computer Graphics
