@@ -13,3 +13,11 @@ My interests:
   * Japanese --> English Localization 
   * Theoretical Computer Science
   * Computer Graphics    
+
+JLPT N1 certified | Proficient Guitarist | Qualified Scuba Diver
+
+Proficient in: 
+ * C
+ * C++
+ * Python 
+ * Javascript
