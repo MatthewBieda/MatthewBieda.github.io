@@ -1,1 +1,1 @@
-This is my resume
+# Japanese Linguist | Software Engineer 
