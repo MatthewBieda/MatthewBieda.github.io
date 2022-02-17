@@ -1,6 +1,6 @@
 # Matthew Bieda Digital CV
 # London, UK
-# 2020
+# 2022
 
 
 
