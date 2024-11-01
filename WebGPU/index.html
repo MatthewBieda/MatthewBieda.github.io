@@ -15,12 +15,12 @@
             const canvas = document.querySelector("canvas");
 
             if (!navigator.gpu) {
-                throw new error("WebGPU not supported on this browser.");
+                throw new Error("WebGPU not supported on this browser.");
             }
 
             const adapter = await navigator.gpu.requestAdapter();
             if (!adapter) {
-                throw new error("No appropriate GPUAdapter found");
+                throw new Error("No appropriate GPUAdapter found");
             }
 
             const device = await adapter.requestDevice();
@@ -142,7 +142,7 @@
                   @group(0) @binding(2) var<storage, read_write> cellStateOut: array<u32>;
 
                   fn cellIndex(cell: vec2u) -> u32 {
-                    return (cell.y % u32(grid.y)) * u32(grid.x) + (cell.x % u32(grid.x));
+                  return (cell.y % u32(grid.y)) * u32(grid.x) + (cell.x % u32(grid.x));
                   }
 
                   fn cellActive(x: u32, y: u32) -> u32 {
