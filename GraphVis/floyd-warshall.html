@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Floyd-Warshall Algorithm Visualization</title>
+  <style>
+    /* Global Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+
+    .container {
+      max-width: 1300px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Button Styles */
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      background-color: #2a9d8f;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    /* Graph Styles */
+    #graph {
+      margin: 20px;
+      width: 800px;
+      height: 500px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background-color: #fff;
+      position: relative;
+    }
+
+    .node {
+      fill: lightblue;
+      stroke: black;
+      stroke-width: 2px;
+    }
+
+    .node-label {
+      font-size: 14px;
+      font-weight: bold;
+      fill: #333;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .edge {
+      stroke: black;
+      stroke-width: 2px;
+    }
+
+    .edge.directed {
+      marker-end: url(#arrowhead);
+    }
+
+    .weight-label {
+      font-size: 12px;
+      fill: black;
+      text-anchor: middle;
+    }
+
+    /* Distance Matrix Styles */
+    #distanceMatrixContainer {
+      margin: 20px;
+    }
+
+    .distance-matrix {
+      margin-top: 10px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .distance-matrix th,
+    .distance-matrix td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .distance-matrix th {
+      background-color: #f2f2f2;
+    }
+
+    .distance-matrix .current {
+      background-color: #ffeb3b;
+    }
+
+    /* Explanation Styles */
+    #algorithm-info,
+    #explanation,
+    #pseudocode {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: #2a9d8f;
+    }
+
+    h3 {
+      color: #333;
+    }
+
+    p {
+      line-height: 1.6;
+    }
+
+    /* Layout Styles */
+    .main-content {
+      display: flex;
+      flex-wrap: nowrap;
+    }
+
+    .left-panel {
+      flex: 0 0 800px;
+    }
+
+    .right-panel {
+      flex: 1;
+      min-width: 400px;
+    }
+
+    #pseudocode pre {
+      background-color: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre;
+    }
+
+    /* Highlight current lines in pseudocode */
+    .code-line {
+      display: block;
+    }
+
+    .code-line.highlight {
+      background-color: #ffeb3b;
+      color: #000;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Floyd-Warshall Algorithm Visualization</h1>
+
+    <div id="algorithm-info">
+      <h3>How it works:</h3>
+      <p>The Floyd-Warshall algorithm computes shortest paths between all pairs of nodes in a weighted graph (without
+        negative cycles). It works by:</p>
+      <ol>
+        <li>Initializing a distance matrix with direct edge weights (or ∞ if no direct edge exists).</li>
+        <li>Iteratively updating the distance matrix using intermediate nodes to find shorter paths.</li>
+      </ol>
+      <p><strong>Algorithm Steps:</strong> For each node <em>k</em>, consider all pairs of nodes <em>i</em> and
+        <em>j</em>, and update the distance from <em>i</em> to <em>j</em> if going through <em>k</em> provides a shorter
+        path. It is a simple algorithm, so I have included the pseudo-code.
+      </p>
+      <p><strong>Another Approach:</strong> Alternatively, you can just run Dijkstra from every node, however if the
+        graph is
+        dense this will be a slower method. If you still want to do this, but
+        the graph contains negative weights, you can use <strong><a
+            href="https://en.wikipedia.org/wiki/Johnson%27s_algorithm">Johnson's
+            Algorithm</a></strong>, which just involves
+        running
+        Bellman-Ford first to eliminate negative edges, then repeatedly running Dijkstra.
+      </p>
+    </div>
+
+    <div id="controls">
+      <button id="playPauseBtn">▶ Play</button>
+      <button id="stepBtn">→ Step</button>
+      <button id="resetBtn">↺ Reset</button>
+    </div>
+
+    <div class="main-content">
+      <div class="left-panel">
+        <div id="graph">
+          <svg id="svgGraph" width="800" height="500" viewBox="150 50 500 400"></svg>
+        </div>
+        <div id="distanceMatrixContainer">
+          <h3>Distance Matrix:</h3>
+          <table id="distanceMatrix" class="distance-matrix"></table>
+        </div>
+      </div>
+      <div class="right-panel">
+        <div id="pseudocode">
+          <h3>Pseudocode:</h3>
+          <pre id="code">
+            <span class="code-line" data-line="1">for k from 0 to n-1:</span>
+            <span class="code-line" data-line="2">&nbsp;&nbsp;for i from 0 to n-1:</span>
+            <span class="code-line" data-line="3">&nbsp;&nbsp;&nbsp;&nbsp;for j from 0 to n-1:</span>
+            <span class="code-line" data-line="4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if dist[i][k] + dist[k][j] &lt;
+              dist[i][j]:</span>
+            <span class="code-line" data-line="5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dist[i][j] =
+              dist[i][k] + dist[k][j]</span>
+          </pre>
+        </div>
+        <div id="explanation">
+          <h3>Explanation</h3>
+          <p>Algorithm initialized. Starting with initial distance matrix.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      class FloydWarshallVisualization {
+        constructor(svgElement, explanationElement, matrixElement, codeElement) {
+          this.svg = svgElement;
+          this.explanationElement = explanationElement;
+          this.matrixElement = matrixElement;
+          this.codeElement = codeElement;
+          this.animationInterval = null;
+          this.isPlaying = false;
+          this.isComplete = false;
+          this.currentK = 0;
+          this.currentI = 0;
+          this.currentJ = -1;
+
+          this.initializeGraphData();
+          this.initializeVariables();
+          this.drawGraph();
+          this.initializeDistanceMatrix();
+          this.updateDistanceMatrix();
+          this.setExplanation("Algorithm initialized. Starting with initial distance matrix.");
+          this.setupEventListeners();
+        }
+
+        initializeGraphData() {
+          // Define nodes and edges
+          this.nodes = [
+            {id: 0, x: 200, y: 100, label: 'A'},
+            {id: 1, x: 600, y: 100, label: 'B'},
+            {id: 2, x: 200, y: 400, label: 'C'},
+            {id: 3, x: 600, y: 400, label: 'D'}
+          ];
+
+          this.edges = [
+            {from: 0, to: 1, weight: 3},
+            {from: 0, to: 2, weight: 7},
+            {from: 1, to: 3, weight: 1},
+            {from: 2, to: 3, weight: 2},
+            {from: 3, to: 0, weight: 6}
+          ];
+        }
+
+        initializeVariables() {
+          const n = this.nodes.length;
+          this.distanceMatrix = Array.from({length: n}, () => Array(n).fill(Infinity));
+
+          // Initialize distances based on direct edges
+          this.nodes.forEach((node, i) => {
+            this.distanceMatrix[i][i] = 0;
+          });
+
+          this.edges.forEach(edge => {
+            this.distanceMatrix[edge.from][edge.to] = edge.weight;
+          });
+
+          this.isPlaying = false;
+          this.isComplete = false;
+          this.currentK = 0;
+          this.currentI = 0;
+          this.currentJ = -1;
+        }
+
+        drawGraph() {
+          this.svg.innerHTML = ''; // Clear previous SVG elements
+
+          // Define arrowhead marker
+          const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+          const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+          marker.setAttribute("id", "arrowhead");
+          marker.setAttribute("markerWidth", "10");
+          marker.setAttribute("markerHeight", "7");
+          marker.setAttribute("refX", "10");
+          marker.setAttribute("refY", "3.5");
+          marker.setAttribute("orient", "auto");
+          marker.setAttribute("markerUnits", "strokeWidth"); // Ensures marker scales with stroke width
+          const markerPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          markerPath.setAttribute("d", "M0,0 L10,3.5 L0,7");
+          markerPath.setAttribute("fill", "gray");
+          marker.appendChild(markerPath);
+          defs.appendChild(marker);
+          this.svg.appendChild(defs);
+
+          // Draw edges
+          this.edges.forEach((edge) => {
+            const fromNode = this.nodes.find(n => n.id === edge.from);
+            const toNode = this.nodes.find(n => n.id === edge.to);
+
+            let path;
+            // Draw straight edge
+            const {x1, y1, x2, y2} = this.getLineCoordinates(fromNode, toNode, 25);
+            path = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            path.setAttribute("x1", x1);
+            path.setAttribute("y1", y1);
+            path.setAttribute("x2", x2);
+            path.setAttribute("y2", y2);
+
+            path.setAttribute("class", "edge directed");
+            path.setAttribute("data-from", edge.from);
+            path.setAttribute("data-to", edge.to);
+            this.svg.appendChild(path);
+
+            // Add weight label
+            let midX = (fromNode.x + toNode.x) / 2;
+            let midY = (fromNode.y + toNode.y) / 2 - 10;
+
+            // Adjust positions for overlapping labels
+            if (edge.from === 0 && edge.to === 2) {
+              midX -= 10;
+            }
+
+            if (edge.from === 1 && edge.to === 3) {
+              midX += 10;
+            }
+
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", midX);
+            text.setAttribute("y", midY);
+            text.setAttribute("class", "weight-label");
+            text.textContent = edge.weight;
+            this.svg.appendChild(text);
+          });
+
+          // Draw nodes
+          this.nodes.forEach((node) => {
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", node.x);
+            circle.setAttribute("cy", node.y);
+            circle.setAttribute("r", 25);
+            circle.setAttribute("class", "node");
+            this.svg.appendChild(circle);
+
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute("x", node.x);
+            label.setAttribute("y", node.y);
+            label.setAttribute("class", "node-label");
+            label.textContent = node.label;
+            this.svg.appendChild(label);
+          });
+        }
+
+        getLineCoordinates(fromNode, toNode, nodeRadius) {
+          const dx = toNode.x - fromNode.x;
+          const dy = toNode.y - fromNode.y;
+          const angle = Math.atan2(dy, dx);
+          const x1 = fromNode.x + nodeRadius * Math.cos(angle);
+          const y1 = fromNode.y + nodeRadius * Math.sin(angle);
+          const x2 = toNode.x - nodeRadius * Math.cos(angle);
+          const y2 = toNode.y - nodeRadius * Math.sin(angle);
+          return {x1, y1, x2, y2};
+        }
+
+        initializeDistanceMatrix() {
+          const n = this.nodes.length;
+          const headerRow = `<tr><th></th>${this.nodes.map(node => `<th>${node.label}</th>`).join('')}</tr>`;
+          const rows = this.nodes.map((node, i) => {
+            const cells = this.nodes.map((_, j) => `<td id="cell-${i}-${j}"></td>`).join('');
+            return `<tr><th>${node.label}</th>${cells}</tr>`;
+          }).join('');
+          this.matrixElement.innerHTML = headerRow + rows;
+        }
+
+        updateDistanceMatrix() {
+          const n = this.nodes.length;
+          for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+              const cell = document.getElementById(`cell-${i}-${j}`);
+              cell.textContent = this.distanceMatrix[i][j] === Infinity ? '∞' : this.distanceMatrix[i][j];
+              cell.classList.remove('current');
+              if (i === this.currentI && j === this.currentJ) {
+                cell.classList.add('current');
+              }
+            }
+          }
+        }
+
+        highlightCodeLine(lineNumber) {
+          const codeLines = this.codeElement.querySelectorAll('.code-line');
+          codeLines.forEach(line => line.classList.remove('highlight'));
+          if (lineNumber !== null) {
+            const currentLine = this.codeElement.querySelector(`.code-line[data-line="${lineNumber}"]`);
+            if (currentLine) {
+              currentLine.classList.add('highlight');
+            }
+          }
+        }
+
+        setExplanation(text) {
+          this.explanationElement.innerHTML = `<h3>Explanation</h3><p>${text}</p>`;
+        }
+
+        stepForward() {
+          if (this.isComplete) return;
+
+          const n = this.nodes.length;
+
+          this.currentJ++;
+          if (this.currentJ >= n) {
+            this.currentJ = 0;
+            this.currentI++;
+          }
+          if (this.currentI >= n) {
+            this.currentI = 0;
+            this.currentK++;
+          }
+          if (this.currentK >= n) {
+            this.isComplete = true;
+            this.isPlaying = false;
+            this.stopAnimation();
+            this.highlightCodeLine(null);
+            this.setExplanation("Algorithm complete! The shortest paths between all pairs have been found.");
+            return;
+          }
+
+          const i = this.currentI;
+          const j = this.currentJ;
+          const k = this.currentK;
+
+          // Highlight line 4 before checking the condition
+          this.highlightCodeLine(4);
+
+          const oldDistance = this.distanceMatrix[i][j];
+          const newDistance = this.distanceMatrix[i][k] + this.distanceMatrix[k][j];
+
+          if (newDistance < oldDistance) {
+            // Highlight line 5 when updating the distance
+            this.highlightCodeLine(5);
+            this.distanceMatrix[i][j] = newDistance;
+            this.setExplanation(`Updated distance from ${this.nodes[i].label} to ${this.nodes[j].label} via ${this.nodes[k].label}: ${oldDistance} → ${newDistance}`);
+          } else {
+            this.setExplanation(`No update required for distance from ${this.nodes[i].label} to ${this.nodes[j].label} via ${this.nodes[k].label}`);
+          }
+
+          this.updateDistanceMatrix();
+        }
+
+        togglePlayPause() {
+          if (this.isComplete) return;
+          this.isPlaying = !this.isPlaying;
+          this.updatePlayPauseButton();
+
+          if (this.isPlaying) {
+            this.startAnimation();
+          } else {
+            this.stopAnimation();
+          }
+        }
+
+        startAnimation() {
+          this.animationInterval = setInterval(() => {
+            if (this.isPlaying && !this.isComplete) {
+              this.stepForward();
+            } else {
+              this.stopAnimation();
+            }
+          }, 1000); // Adjust the interval (milliseconds) to control speed
+        }
+
+        stopAnimation() {
+          clearInterval(this.animationInterval);
+        }
+
+        resetVisualization() {
+          this.stopAnimation();
+          this.initializeVariables();
+          this.initializeDistanceMatrix();
+          this.updateDistanceMatrix();
+          this.setExplanation("Algorithm reset. Starting with initial distance matrix.");
+          this.updatePlayPauseButton();
+          this.highlightCodeLine(null);
+        }
+
+        updatePlayPauseButton() {
+          const btn = document.getElementById("playPauseBtn");
+          btn.textContent = this.isPlaying ? "⏸ Pause" : "▶ Play";
+        }
+
+        setupEventListeners() {
+          document.getElementById("playPauseBtn").addEventListener("click", () => this.togglePlayPause());
+          document.getElementById("stepBtn").addEventListener("click", () => {
+            if (!this.isComplete && !this.isPlaying) {
+              this.stepForward();
+            }
+          });
+          document.getElementById("resetBtn").addEventListener("click", () => this.resetVisualization());
+        }
+      }
+
+      // Initialize Visualization
+      const svgElement = document.getElementById("svgGraph");
+      const explanationElement = document.getElementById("explanation");
+      const matrixElement = document.getElementById("distanceMatrix");
+      const codeElement = document.getElementById("code");
+
+      const floydWarshallVisualization = new FloydWarshallVisualization(svgElement, explanationElement, matrixElement, codeElement);
+    })();
+  </script>
+</body>
+
+</html>

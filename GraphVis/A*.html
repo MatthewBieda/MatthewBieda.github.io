@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A* Pathfinding Visualization</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f8f9fa;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #2a9d8f;
+    }
+
+    #grid {
+      border: 1px solid black;
+      display: grid;
+      grid-template-columns: repeat(25, 20px);
+      grid-template-rows: repeat(25, 20px);
+      margin: 20px 0;
+    }
+
+    .cell {
+      stroke: #ddd;
+      fill: white;
+    }
+
+    .path {
+      fill: yellow;
+    }
+
+    .visited {
+      fill: lightblue;
+    }
+
+    .obstacle {
+      fill: black;
+    }
+
+    .start {
+      fill: green;
+    }
+
+    .goal {
+      fill: red;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .legend-box {
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+    }
+
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>A* Pathfinding Visualization</h1>
+  <svg id="grid" width="500" height="500"></svg>
+
+  <div id="info">
+    <h2>Legend</h2>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-box" style="background-color: green;"></div> Start Node
+      </div>
+      <div class="legend-item">
+        <div class="legend-box" style="background-color: red;"></div> Destination Node
+      </div>
+      <div class="legend-item">
+        <div class="legend-box" style="background-color: yellow;"></div> Shortest Path
+      </div>
+      <div class="legend-item">
+        <div class="legend-box" style="background-color: lightblue;"></div> Search Space
+      </div>
+      <div class="legend-item">
+        <div class="legend-box" style="background-color: black;"></div> Obstacle
+      </div>
+    </div>
+
+    <h2>How It Works</h2>
+    <p>
+      The A* Pathfinding algorithm is a widely-used method for finding the shortest path between two points. It
+      visualizes the search process
+      by progressively expanding a search space (blue cells) and ultimately marking the shortest path (yellow cells).
+    </p>
+    <h3>Heuristic and Search Details</h3>
+    <p>
+      A* uses a heuristic to guide its search. This heuristic is calculated as the sum of three parameters:
+    </p>
+    <ul>
+      <li>
+        <b>g(n):</b> The exact cost of the path from the start node to the current node.
+      </li>
+      <li>
+        <b>h(n):</b> The estimated cost from the current node to the goal node, often based on Manhattan Distance in
+        grid-based environments.
+      </li>
+      <li>
+        <b>f(n):</b> The total estimated cost of the path through the current node: <code>f(n) = g(n) + h(n)</code>.
+      </li>
+    </ul>
+    <p>
+      At each step, the algorithm selects the node with the lowest <code>f(n)</code> from the open set (unvisited
+      neighbors).
+      This balance of exact and estimated costs allows A* to prioritize efficient paths while avoiding unnecessary
+      exploration.
+    </p>
+    <h3>Unweighted vs Weighted Grids</h3>
+    <p>
+      For simplicity, this grid is unweighted, meaning that all edges have the same cost, and the search space is
+      uniform.
+      As a result, Dijkstra and BFS would form a concentric ring pattern expanding outwards from the source node,
+      exploring all neighbors level by level.
+    </p>
+    <p>
+      If the grid were weighted, the cost of traveling between cells would vary depending on the weight assigned to each
+      cell, affecting the pathfinding process. In this scenario:
+    </p>
+    <ul>
+      <li>
+        A* would still prioritize the path with the lowest <code>f(n)</code>, but the <code>g(n)</code> value would
+        change to reflect the different weights, impacting the overall search and the path chosen.
+      </li>
+      <li>
+        Dijkstra’s algorithm would also be affected, as the varying weights would influence the shortest path
+        calculation, potentially resulting in a different path than when the grid is unweighted.
+      </li>
+      <li>
+        BFS cannot be effectively used on a weighted grid, as it assumes all steps have the same cost and cannot account
+        for varying edge costs.
+      </li>
+    </ul>
+    <h3>Visualization Details</h3>
+    <ul>
+      <li>Blue cells represent nodes visited during the search, indicating the algorithm’s exploration of possible
+        paths.</li>
+      <li>Yellow cells highlight the shortest path from the start (green) to the destination (red).</li>
+      <li>Black cells are obstacles that the algorithm avoids, dynamically shaping the search space.</li>
+    </ul>
+  </div>
+
+  <script src="A*.js"></script>
+</body>
+
+</html>

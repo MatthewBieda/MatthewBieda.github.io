@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahn's Algorithm Visualization</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+
+    h1 {
+      color: #2a9d8f;
+      margin: 20px 0;
+    }
+
+    .explanation {
+      max-width: 800px;
+      margin: 0 auto 20px auto;
+      text-align: left;
+      font-size: 16px;
+      line-height: 1.5;
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .controls {
+      margin: 20px;
+    }
+
+    button {
+      background-color: #2a9d8f;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #21867a;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    #graph {
+      margin: 0 auto;
+      display: inline-block;
+      border: 1px solid #ddd;
+      background-color: #ffffff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    svg {
+      display: block;
+      margin: 0 auto;
+    }
+
+    .node {
+      fill: lightblue;
+      stroke: black;
+      stroke-width: 2px;
+    }
+
+    .node.processed {
+      fill: lightgreen;
+    }
+
+    .node-label {
+      font-size: 14px;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      fill: black;
+    }
+
+    .edge {
+      stroke: black;
+      stroke-width: 2px;
+      marker-end: url(#arrowhead);
+    }
+
+    .edge.processed {
+      stroke: #e76f51;
+    }
+
+    #log {
+      margin: 20px auto;
+      max-width: 800px;
+      text-align: left;
+      font-family: monospace;
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 10px;
+      overflow-y: auto;
+      height: 150px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      font-size: 18px;
+    }
+
+    #logList {
+      padding-left: 20px;
+      font-size: 18px;
+    }
+
+    #log h3 {
+      text-align: center;
+      margin-top: -5px;
+      font-size: 20px;
+      color: #2a9d8f;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Kahn's Algorithm Visualization</h1>
+
+  <div class="explanation">
+    <p>
+      <strong>Kahn's Algorithm</strong> is a method for finding a topological order in a Directed Acyclic Graph (DAG).
+      The algorithm repeatedly removes nodes with no incoming edges (in-degree = 0) from the graph and adds them to the
+      result.
+      If, at any point, there are no nodes with in-degree 0 and not all nodes are processed, a cycle exists, and
+      topological sorting is not possible.
+    </p>
+    <p>
+      <strong>Practical Applications:</strong> Topological sorting has a wide range of practical applications,
+      including:
+    </p>
+    <ul>
+      <li><strong>Course Scheduling:</strong> Finding a valid ordering of courses with prerequisites, ensuring each
+        course is taken after its dependencies.</li>
+      <li><strong>Task Scheduling:</strong> Organizing tasks in a workflow where some tasks must be completed before
+        others, such as in project management or build systems.</li>
+      <li><strong>Dependency Resolution:</strong> Ensuring the correct order of library or package installations, where
+        some libraries depend on others.</li>
+      <li><strong>Compilers:</strong> Resolving dependencies in the compilation of code, such as determining the order
+        of file compilation in a programming project.</li>
+      <li><strong>Circuit Design:</strong> Identifying a valid sequence for placing components in electronic circuit
+        design.</li>
+    </ul>
+    <p>
+      This visualization processes nodes one by one, showing the order of processing and highlighting the edges
+      traversed.
+      The log below displays step-by-step updates, including nodes being added to the result or queue and any cycle
+      detection.
+    </p>
+  </div>
+
+  <div id="graph">
+    <svg id="svgGraph" width="1000" height="300" viewBox="0 0 1000 300">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="20" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="grey" />
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="controls">
+    <button id="startButton">Start Kahn's Algorithm</button>
+    <button id="toggleGraph">Toggle Graph</button>
+    <button id="resetButton">Reset</button>
+  </div>
+
+  <div id="log">
+    <h3>Algorithm Progress</h3>
+    <ul id="logList"></ul>
+  </div>
+
+  <script>
+    class KahnsAlgorithmVisualization {
+      constructor(svgElement, graphData) {
+        this.svg = svgElement;
+        this.graphData = graphData;
+        this.currentGraphKey = 'dag';
+        this.currentTimeout = null;
+        this.algorithmInProgress = false;
+
+        // Initialize the graph
+        this.drawGraph();
+
+        // Set up event listeners
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        document.getElementById('startButton').addEventListener('click', () => this.startAlgorithm());
+        document.getElementById('toggleGraph').addEventListener('click', () => this.toggleGraph());
+        document.getElementById('resetButton').addEventListener('click', () => this.resetVisualization());
+      }
+
+      drawGraph() {
+        const {nodes, edges} = this.graphData[this.currentGraphKey];
+
+        // Clear any existing animation
+        clearTimeout(this.currentTimeout);
+        this.algorithmInProgress = false;
+        document.getElementById('startButton').disabled = false;
+
+        // Clear the graph and log
+        this.svg.innerHTML = `
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="20" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="grey" />
+            </marker>
+          </defs>
+        `;
+
+        // Draw edges
+        edges.forEach(edge => {
+          const fromNode = nodes.find(n => n.id === edge.from);
+          const toNode = nodes.find(n => n.id === edge.to);
+
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', fromNode.x);
+          line.setAttribute('y1', fromNode.y);
+          line.setAttribute('x2', toNode.x);
+          line.setAttribute('y2', toNode.y);
+          line.setAttribute('class', 'edge');
+          line.setAttribute('data-from', edge.from);
+          line.setAttribute('data-to', edge.to);
+          line.setAttribute('marker-end', 'url(#arrowhead)');
+          this.svg.appendChild(line);
+        });
+
+        // Draw nodes
+        nodes.forEach(node => {
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', node.x);
+          circle.setAttribute('cy', node.y);
+          circle.setAttribute('r', 20);
+          circle.setAttribute('class', 'node');
+          circle.setAttribute('id', `node-${node.id}`);
+          this.svg.appendChild(circle);
+
+          const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          label.setAttribute('x', node.x);
+          label.setAttribute('y', node.y);
+          label.setAttribute('class', 'node-label');
+          label.textContent = node.id;
+          this.svg.appendChild(label);
+        });
+
+        this.clearLog();
+        this.logMessage(`Switched to ${this.currentGraphKey === 'dag' ? 'DAG' : 'cyclic graph'}`);
+      }
+
+      startAlgorithm() {
+        if (this.algorithmInProgress) return;
+
+        // Clear any existing animation
+        clearTimeout(this.currentTimeout);
+        this.algorithmInProgress = true;
+        document.getElementById('startButton').disabled = true;
+
+        const {nodes, edges} = this.graphData[this.currentGraphKey];
+        this.numVertices = nodes.length;
+        this.edges = edges;
+        this.adj = Array.from({length: this.numVertices}, () => []);
+        this.inDegree = Array(this.numVertices).fill(0);
+
+        edges.forEach(({from, to}) => {
+          this.adj[from].push(to);
+          this.inDegree[to]++;
+        });
+
+        this.queue = [];
+        this.inDegree.forEach((deg, idx) => {
+          if (deg === 0) this.queue.push(idx);
+        });
+
+        this.index = 0;
+
+        this.logMessage('Initial queue: ' + this.queue.join(', '));
+
+        this.process();
+      }
+
+      processNode(nodeId) {
+        document.getElementById(`node-${nodeId}`).classList.add('processed');
+        this.logMessage(`Processing node ${nodeId}`);
+      }
+
+      processEdge(from, to) {
+        const line = this.svg.querySelector(`.edge[data-from="${from}"][data-to="${to}"]`);
+        if (line) {
+          line.classList.add('processed');
+          this.logMessage(`Processing edge from ${from} to ${to}`);
+        }
+      }
+
+      process() {
+        if (this.queue.length === 0) {
+          if (this.index < this.numVertices) {
+            this.logMessage('Cycle detected! Remaining nodes with non-zero in-degree:');
+            for (let i = 0; i < this.inDegree.length; i++) {
+              if (this.inDegree[i] > 0) {
+                this.logMessage(`Node ${i} has in-degree ${this.inDegree[i]}`);
+              }
+            }
+            this.logMessage('No valid topological order exists.');
+          } else {
+            this.logMessage('Topological sort completed successfully!');
+          }
+          this.algorithmInProgress = false;
+          document.getElementById('startButton').disabled = false;
+          return;
+        }
+
+        const current = this.queue.shift();
+        this.processNode(current);
+
+        this.adj[current].forEach(neighbor => {
+          this.processEdge(current, neighbor);
+          this.inDegree[neighbor]--;
+          if (this.inDegree[neighbor] === 0) {
+            this.queue.push(neighbor);
+            this.logMessage(`Added node ${neighbor} to the queue`);
+          }
+        });
+
+        this.index++;
+        this.currentTimeout = setTimeout(() => this.process(), 1000);
+      }
+
+      toggleGraph() {
+        if (this.algorithmInProgress) {
+          clearTimeout(this.currentTimeout);
+          this.algorithmInProgress = false;
+          document.getElementById('startButton').disabled = false;
+        }
+        this.currentGraphKey = this.currentGraphKey === 'dag' ? 'cyclic' : 'dag';
+        this.drawGraph();
+      }
+
+      resetVisualization() {
+        clearTimeout(this.currentTimeout);
+        this.algorithmInProgress = false;
+        document.getElementById('startButton').disabled = false;
+        this.drawGraph();
+      }
+
+      logMessage(message) {
+        const logList = document.getElementById('logList');
+        const logItem = document.createElement('li');
+        logItem.textContent = message;
+        logList.appendChild(logItem);
+        logList.scrollTop = logList.scrollHeight;
+      }
+
+      clearLog() {
+        const logList = document.getElementById('logList');
+        logList.innerHTML = '';
+      }
+    }
+
+    // Initialize the visualization
+    document.addEventListener('DOMContentLoaded', () => {
+      const svg = document.getElementById('svgGraph');
+
+      // Define graph configurations
+      const graphData = {
+        dag: {
+          nodes: [
+            {id: 0, x: 100, y: 150},
+            {id: 1, x: 250, y: 50},
+            {id: 2, x: 250, y: 250},
+            {id: 3, x: 400, y: 100},
+            {id: 4, x: 400, y: 200},
+            {id: 5, x: 550, y: 50},
+            {id: 6, x: 550, y: 250},
+            {id: 7, x: 700, y: 150},
+            {id: 8, x: 850, y: 50},
+            {id: 9, x: 850, y: 250},
+          ],
+          edges: [
+            {from: 0, to: 1},
+            {from: 0, to: 2},
+            {from: 1, to: 3},
+            {from: 2, to: 3},
+            {from: 2, to: 4},
+            {from: 3, to: 5},
+            {from: 4, to: 6},
+            {from: 3, to: 6},
+            {from: 5, to: 7},
+            {from: 6, to: 7},
+            {from: 7, to: 8},
+            {from: 7, to: 9},
+          ],
+        },
+        cyclic: {
+          nodes: [
+            {id: 0, x: 100, y: 150},
+            {id: 1, x: 250, y: 50},
+            {id: 2, x: 250, y: 250},
+            {id: 3, x: 400, y: 100},
+            {id: 4, x: 400, y: 200},
+            {id: 5, x: 550, y: 50},
+            {id: 6, x: 550, y: 250},
+            {id: 7, x: 700, y: 150},
+            {id: 8, x: 850, y: 50},
+            {id: 9, x: 850, y: 250},
+          ],
+          edges: [
+            {from: 0, to: 1},
+            {from: 0, to: 2},
+            {from: 1, to: 3},
+            {from: 2, to: 3},
+            {from: 2, to: 4},
+            {from: 3, to: 5},
+            {from: 4, to: 6},
+            {from: 3, to: 6},
+            {from: 5, to: 7},
+            {from: 6, to: 7},
+            {from: 7, to: 8},
+            {from: 7, to: 9},
+            {from: 9, to: 6}, // This creates a cycle
+          ],
+        },
+      };
+
+      const visualization = new KahnsAlgorithmVisualization(svg, graphData);
+    });
+  </script>
+</body>
+
+</html>

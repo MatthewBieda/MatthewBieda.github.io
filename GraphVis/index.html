@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Graph Algorithm Visualizations</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <div class="container">
+            <h1>Graph Algorithm Visualizations</h1>
+            <p>Interactive visualizations to help you understand graph algorithms better.</p>
+            <nav>
+                <ul>
+                    <li><a href="time-complexities.html">Time Complexities</a></li>
+                    <li><a href="cycle-detection.html">Cycle Detection</a></li>
+                    <li><a
+                            href="https://github.com/MatthewBieda/DataStructuresandAlgos-in-Cplusplus/tree/main/GraphVis_Reference_Implementations">C++
+                            Reference
+                            Implementations</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+
+            <!-- Exploration Algorithms -->
+            <section>
+                <h2>Exploration Algorithms</h2>
+                <div class="grid">
+                    <!-- DFS -->
+                    <article class="card">
+                        <h3><a href="dfs.html">Depth-First Search (DFS)</a></h3>
+                        <p>DFS explores a graph by visiting nodes as deeply as possible before backtracking, using
+                            recursion or a stack.</p>
+                    </article>
+                    <!-- BFS -->
+                    <article class="card">
+                        <h3><a href="bfs.html">Breadth-First Search (BFS)</a></h3>
+                        <p>BFS explores a graph level by level, starting from a source node, using a queue to keep track
+                            of nodes to visit.</p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Shortest Path Algorithms -->
+            <section>
+                <h2>Shortest Path Algorithms</h2>
+                <div class="grid">
+                    <!-- Dijkstra -->
+                    <article class="card">
+                        <h3><a href="dijkstra.html">Dijkstra's Algorithm</a></h3>
+                        <p>Finds the shortest path from a source node to all other nodes in a graph with non-negative
+                            edge weights, using a priority queue.</p>
+                    </article>
+                    <!-- A* Search -->
+                    <article class="card">
+                        <h3><a href="A*.html">A* Search Algorithm</a></h3>
+                        <p>Extends Dijkstra's Algorithm by using heuristics to guide its search towards a destination
+                            node.</p>
+                    </article>
+                    <!-- Bellman-Ford -->
+                    <article class="card">
+                        <h3><a href="bellman-ford.html">Bellman-Ford Algorithm</a></h3>
+                        <p>Finds shortest paths from a source node to all other nodes, handling negative edge weights
+                            and detecting negative weight cycles.</p>
+                    </article>
+                    <!-- Floyd-Warshall -->
+                    <article class="card">
+                        <h3><a href="floyd-warshall.html">Floyd-Warshall Algorithm</a></h3>
+                        <p>Computes shortest paths between all pairs of nodes in a weighted graph, including graphs with
+                            negative weights but no negative cycles.</p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Minimum Spanning Tree Algorithms -->
+            <section>
+                <h2>Minimum Spanning Tree (MST) Algorithms</h2>
+                <div class="grid">
+                    <!-- Kruskal -->
+                    <article class="card">
+                        <h3><a href="kruskal.html">Kruskal's Algorithm</a></h3>
+                        <p>Finds a minimum spanning tree by selecting edges with the smallest weights while avoiding
+                            cycles.</p>
+                    </article>
+                    <!-- Prim -->
+                    <article class="card">
+                        <h3><a href="prim.html">Prim's Algorithm</a></h3>
+                        <p>Builds a minimum spanning tree by starting from an arbitrary node and adding the smallest
+                            edge that connects the tree to a new vertex.</p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Topological Ordering -->
+            <section>
+                <h2>Topological Ordering</h2>
+                <div class="grid">
+                    <!-- Kahn's Algorithm -->
+                    <article class="card">
+                        <h3><a href="kahn.html">Kahn's Algorithm</a></h3>
+                        <p>Performs topological sorting on a directed acyclic graph (DAG), ordering nodes linearly
+                            without violating edge directions.</p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Advanced Algorithms -->
+            <section>
+                <h2>Advanced Algorithms</h2>
+                <p class="warning">⚠️ Advanced Territory Ahead! These algorithms are more advanced and included for
+                    completeness.</p>
+                <div class="grid">
+                    <!-- Tarjan's Algorithm -->
+                    <article class="card">
+                        <h3><a href="https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm">Tarjan's
+                                Algorithm</a></h3>
+                        <p>Finds strongly connected components in a directed graph using depth-first search and low-link
+                            values.</p>
+                    </article>
+                    <!-- Kosaraju's Algorithm -->
+                    <article class="card">
+                        <h3><a href="https://en.wikipedia.org/wiki/Kosaraju%27s_algorithm">Kosaraju's Algorithm</a></h3>
+                        <p>Identifies strongly connected components by performing two passes of depth-first search.</p>
+                    </article>
+                    <!-- Edmonds-Karp Algorithm -->
+                    <article class="card">
+                        <h3><a href="https://en.wikipedia.org/wiki/Edmonds%E2%80%93Karp_algorithm">Edmonds-Karp
+                                Algorithm</a></h3>
+                        <p>Computes the maximum flow in a flow network using BFS to find augmenting paths in the
+                            Ford-Fulkerson method.</p>
+                    </article>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            &copy; 2024 Graph Algorithm Visualizations | Created by Matthew Bieda
+        </div>
+    </footer>
+
+</body>
+
+</html>

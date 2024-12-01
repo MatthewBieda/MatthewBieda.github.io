@@ -1,0 +1,64 @@
+1. Bellman-Ford
+
+    Time Complexity: O(V×E)O(V×E), where VV is the number of vertices and EE is the number of edges.
+    Key Points:
+        Handles Negative Weights: Bellman-Ford is one of the few algorithms that works with graphs that have negative edge weights.
+        Negative Cycle Detection: Bellman-Ford can detect negative weight cycles in a graph. After running the standard relaxation for V−1V−1 iterations, you perform one more relaxation to check for negative cycles. If any distance changes in this iteration, a negative cycle exists.
+    Implementation Notes:
+        A simple implementation involves relaxing each edge for V−1V−1 iterations.
+        You can optimize the algorithm slightly by stopping early if no distances change during an iteration (indicating that the shortest paths have been found).
+
+2. Bellman-Ford-SPFA (Shortest Path Faster Algorithm)
+
+    Time Complexity: Worst-case O(V×E)O(V×E), but in practice it often runs much faster than Bellman-Ford.
+    Key Points:
+        Queue-Based Optimization: SPFA uses a priority queue to process nodes with the smallest tentative distance, making it more efficient than Bellman-Ford in many cases. It performs better in sparse graphs.
+        Negative Weight Cycles: Like Bellman-Ford, SPFA can also handle negative weight edges, but detecting negative cycles requires additional checks.
+    Implementation Notes:
+        Use a priority queue (often a min-heap) to store and process the nodes based on their tentative distances.
+        It is a more efficient and faster variant in practice, but its worst-case time complexity is still O(V×E)O(V×E).
+
+3. Dijkstra (Priority Queue)
+
+    Time Complexity: O((V+E)log⁡V)O((V+E)logV) when using a priority queue (min-heap).
+    Key Points:
+        Works Only for Non-Negative Weights: Dijkstra works optimally only when all edge weights are non-negative. If negative weights are present, use Bellman-Ford instead.
+        Greedy Algorithm: Dijkstra always selects the vertex with the smallest tentative distance, making it a greedy algorithm.
+        Optimal with Priority Queue: Implementing Dijkstra with a priority queue (min-heap) ensures it runs efficiently.
+    Implementation Notes:
+        Use a min-heap (priority queue) to efficiently extract the node with the smallest distance.
+        Ensure that once a node's shortest distance is finalized (i.e., it is removed from the priority queue), it is never processed again.
+
+4. A (A-star)*
+
+    Time Complexity: O((V+E)log⁡V)O((V+E)logV) when using a priority queue.
+    Key Points:
+        Heuristic-Based Search: A* uses both the actual shortest path cost from the start node (g(n)g(n)) and an estimate of the remaining cost to the goal (h(n)h(n)) to guide the search.
+        Admissible Heuristic: To guarantee the optimal path, the heuristic h(n)h(n) must be admissible, meaning it should never overestimate the actual cost to reach the goal.
+        Optimal and Complete: A* is optimal (if the heuristic is admissible) and complete (if there is a path from the start to the goal).
+    Implementation Notes:
+        Implementing A* requires careful selection of the heuristic function h(n)h(n). In many problems, the Euclidean or Manhattan distance is used.
+        Maintain a priority queue to process nodes based on f(n)=g(n)+h(n)f(n)=g(n)+h(n).
+
+5. Floyd-Warshall
+
+    Time Complexity: O(V3)O(V3), where VV is the number of vertices.
+    Key Points:
+        All-Pairs Shortest Path: Floyd-Warshall computes the shortest paths between all pairs of nodes in the graph, making it a useful algorithm for dense graphs or when you need all-pairs shortest paths.
+        Works with Negative Weights: It can handle negative edge weights, but like Bellman-Ford, it cannot handle negative cycles.
+    Implementation Notes:
+        Implemented using a dynamic programming approach with a 2D distance matrix.
+        It involves three nested loops to compute shortest paths for all pairs of nodes.
+
+6. Johnson’s Algorithm
+
+    Time Complexity: O(V2log⁡V+VE)O(V2logV+VE), where VV is the number of vertices and EE is the number of edges.
+    Key Points:
+        All-Pairs Shortest Path: Like Floyd-Warshall, Johnson's algorithm computes the shortest paths between all pairs of nodes, but it is more efficient in sparse graphs.
+        Uses Bellman-Ford for Reweighting: Johnson's algorithm first runs a Bellman-Ford algorithm from a new source vertex to reweight the edges in the graph to eliminate negative weights. Then it uses Dijkstra to compute the shortest paths from each vertex.
+    Implementation Notes:
+        The algorithm begins by adding a new vertex connected to all other vertices with zero-weight edges.
+        Reweight the edges to ensure all edge weights are non-negative, then apply Dijkstra’s algorithm from each vertex.
+        This can be efficient for sparse graphs, but the initial Bellman-Ford step can be costly if the graph is large.
+
+

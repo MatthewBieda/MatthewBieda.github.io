@@ -1,0 +1,31 @@
+Search:
+BFS
+BFS_All_Paths_Directed
+BFS_MultiSource
+DFS_Iterative 
+DFS_Recursive 
+DFS_All_Paths_Directed
+DFS_Cycle_Detection_Directed
+DFS_Cycle_Detection_Undirected
+
+Shortest Path:
+Bellman-Ford
+Bellman-Ford-SPFA
+Dijkstra (Priority Queue)
+A* (heuristic-based shortest path algorithm that performs an informed search.)
+Floyd-Warshall
+Johnson
+
+Minimum Spanning Tree:
+Kruskal
+Prim
+
+Strongly-connected Components
+Tarjan
+Kosaraju
+
+Topological Ordering:
+Kahn
+
+Maximum-Flow:
+Edmonds-Karp

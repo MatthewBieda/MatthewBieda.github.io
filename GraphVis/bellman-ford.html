@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Bellman-Ford Algorithm Visualization with Negative Cycle Toggle</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+
+    .container {
+      max-width: 1000px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin: auto;
+    }
+
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      background-color: #2a9d8f;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    #graph {
+      margin: 20px auto;
+      width: 800px;
+      height: 500px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .node {
+      fill: lightblue;
+      stroke: black;
+      stroke-width: 2px;
+    }
+
+    .node-label {
+      font-size: 14px;
+      font-weight: bold;
+      fill: #333;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .distance-label {
+      font-size: 12px;
+      font-weight: bold;
+      fill: black;
+      text-anchor: middle;
+    }
+
+    .edge {
+      stroke: gray;
+      stroke-width: 2px;
+    }
+
+    .edge.current {
+      stroke: #3b82f6;
+      stroke-width: 4px;
+    }
+
+    .edge.relaxed {
+      stroke: #22c55e;
+      stroke-width: 4px;
+    }
+
+    .edge.negative-cycle {
+      stroke: red;
+      stroke-width: 4px;
+      stroke-dasharray: 5, 5;
+    }
+
+    #algorithm-info,
+    #explanation {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: #2a9d8f;
+    }
+
+    h3 {
+      color: #333;
+    }
+
+    p {
+      line-height: 1.6;
+    }
+
+    .legend {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Bellman-Ford Algorithm Visualization</h1>
+
+    <div id="algorithm-info">
+      <h3>How it works:</h3>
+      <p>The Bellman-Ford algorithm can handle negative edge weights and detect negative cycles. It works by:</p>
+      <ol>
+        <li>Initializing distances (source = 0, others = ∞)</li>
+        <li>Relaxing all edges |V| - 1 times</li>
+        <li>Checking for negative cycles with an additional iteration</li>
+      </ol>
+      <p><strong>Edge Selection Order:</strong> In each iteration, all edges are processed in the order they are
+        defined.</p>
+      <p><strong>Comparison with Dijkstra:</strong> While Dijkstra's algorithm cannot handle negative weights,
+        Bellman-Ford can.</p>
+      <p><strong>SPFA Optimization:</strong> The Shortest Path Faster Algorithm (SPFA) is an optimization of
+        Bellman-Ford. It uses a queue to process only the nodes whose distances have been updated, potentially reducing
+        the number of relaxations needed. This optimization often leads to faster convergence in practice, even though
+        the worst-case time complexity remains O(VE).</p>
+    </div>
+
+    <div id="controls">
+      <button id="playPauseBtn">▶ Play</button>
+      <button id="stepBtn">→ Step</button>
+      <button id="resetBtn">↺ Reset</button>
+      <button id="toggleGraphBtn">Toggle Graph</button>
+    </div>
+
+    <div id="graph">
+      <svg id="svgGraph" width="800" height="500" viewBox="150 100 500 350"></svg>
+    </div>
+
+    <div id="explanation">
+      <h3>Explanation</h3>
+      <p>Algorithm initialized. Starting from source node S.</p>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color" style="background: #3b82f6"></div>
+        <span>Current Edge</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #22c55e"></div>
+        <span>Relaxed Edge</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: red; border: 1px dashed;"></div>
+        <span>Negative Cycle</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const graphData = {
+        withoutNegativeCycle: {
+          nodes: [
+            {id: 0, x: 200, y: 150, label: 'S'},
+            {id: 1, x: 400, y: 150, label: 'A'},
+            {id: 2, x: 600, y: 150, label: 'B'},
+            {id: 3, x: 300, y: 300, label: 'C'},
+            {id: 4, x: 500, y: 300, label: 'D'}
+          ],
+          edges: [
+            {from: 0, to: 1, weight: -1},
+            {from: 1, to: 2, weight: 3},
+            {from: 1, to: 3, weight: 2},
+            {from: 1, to: 4, weight: 2},
+            {from: 3, to: 2, weight: 5},
+            {from: 4, to: 3, weight: -3}
+          ]
+        },
+        withNegativeCycle: {
+          nodes: [
+            {id: 0, x: 200, y: 150, label: 'S'},
+            {id: 1, x: 400, y: 150, label: 'A'},
+            {id: 2, x: 600, y: 150, label: 'B'},
+            {id: 3, x: 300, y: 300, label: 'C'},
+            {id: 4, x: 500, y: 300, label: 'D'},
+            {id: 5, x: 400, y: 400, label: 'E'}
+          ],
+          edges: [
+            {from: 0, to: 1, weight: 4},
+            {from: 1, to: 2, weight: -10},
+            {from: 2, to: 3, weight: 3},
+            {from: 3, to: 1, weight: 4},
+            {from: 3, to: 4, weight: 2},
+            {from: 4, to: 5, weight: -5},
+            {from: 5, to: 3, weight: 1}
+          ]
+        }
+      };
+
+      class GraphVisualization {
+        constructor(svgElement, explanationElement) {
+          this.svg = svgElement;
+          this.explanationElement = explanationElement;
+          this.sourceNodeId = 0;
+          this.currentGraphKey = 'withoutNegativeCycle';
+          this.animationInterval = null;
+          this.isPlaying = false;
+          this.isComplete = false;
+
+          this.initializeVariables();
+          this.drawGraph();
+          this.updateDistanceLabels();
+          this.setExplanation("Algorithm initialized. Starting from source node S.");
+          this.setupEventListeners();
+        }
+
+        initializeVariables() {
+          const graph = graphData[this.currentGraphKey];
+          this.nodes = graph.nodes;
+          this.edges = graph.edges;
+          this.distances = Array(this.nodes.length).fill(Infinity);
+          this.distances[this.sourceNodeId] = 0;
+          this.predecessors = Array(this.nodes.length).fill(null);
+          this.currentIteration = 0;
+          this.currentEdgeIndex = -1;
+          this.relaxedEdges = new Set();
+          this.negativeCycleEdge = null;
+          this.isPlaying = false;
+          this.isComplete = false;
+        }
+
+        drawGraph() {
+          this.svg.innerHTML = ''; // Clear previous SVG elements
+
+          // Draw edges
+          this.edges.forEach((edge) => {
+            const fromNode = this.nodes.find(n => n.id === edge.from);
+            const toNode = this.nodes.find(n => n.id === edge.to);
+
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", fromNode.x);
+            line.setAttribute("y1", fromNode.y);
+            line.setAttribute("x2", toNode.x);
+            line.setAttribute("y2", toNode.y);
+            line.setAttribute("class", "edge");
+            line.setAttribute("data-from", edge.from);
+            line.setAttribute("data-to", edge.to);
+            this.svg.appendChild(line);
+
+            // Add weight label
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            let midX = (fromNode.x + toNode.x) / 2;
+            let midY = (fromNode.y + toNode.y) / 2 - 10;
+
+            // Adjust positions for overlapping labels in the first graph
+            if (this.currentGraphKey === 'withoutNegativeCycle') {
+              if (edge.from === 1 && edge.to === 4) {
+                midY += 35; // Move A-D label down
+              }
+              if (edge.from === 3 && edge.to === 2) {
+                midX += 15; // Move C-B label to the right
+              }
+            }
+
+            text.setAttribute("x", midX);
+            text.setAttribute("y", midY);
+            text.setAttribute("class", "weight-label");
+            text.textContent = edge.weight;
+            this.svg.appendChild(text);
+          });
+
+          // Draw nodes
+          this.nodes.forEach((node) => {
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", node.x);
+            circle.setAttribute("cy", node.y);
+            circle.setAttribute("r", 25);
+            circle.setAttribute("class", "node");
+            this.svg.appendChild(circle);
+
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute("x", node.x);
+            label.setAttribute("y", node.y);
+            label.setAttribute("class", "node-label");
+            label.textContent = node.label;
+            this.svg.appendChild(label);
+
+            const distanceLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            distanceLabel.setAttribute("x", node.x);
+            distanceLabel.setAttribute("y", node.y - 35);
+            distanceLabel.setAttribute("class", "distance-label");
+            distanceLabel.setAttribute("data-node", node.id);
+            distanceLabel.textContent = node.id === this.sourceNodeId ? "0" : "∞";
+            this.svg.appendChild(distanceLabel);
+          });
+        }
+
+        updateDistanceLabels() {
+          this.nodes.forEach((node) => {
+            const label = this.svg.querySelector(`.distance-label[data-node="${node.id}"]`);
+            label.textContent = this.distances[node.id] === Infinity ? "∞" : this.distances[node.id];
+          });
+        }
+
+        updateEdgeStyles() {
+          const edgeElements = this.svg.querySelectorAll(".edge");
+          edgeElements.forEach((edgeElement) => {
+            const from = parseInt(edgeElement.getAttribute("data-from"));
+            const to = parseInt(edgeElement.getAttribute("data-to"));
+            edgeElement.classList.remove("current", "relaxed", "negative-cycle");
+
+            if (this.negativeCycleEdge && from === this.negativeCycleEdge.from && to === this.negativeCycleEdge.to) {
+              edgeElement.classList.add("negative-cycle");
+            } else if (this.currentEdgeIndex !== -1) {
+              const currentEdge = this.edges[this.currentEdgeIndex];
+              if (from === currentEdge.from && to === currentEdge.to) {
+                edgeElement.classList.add("current");
+              } else if (this.relaxedEdges.has(`${from}-${to}`)) {
+                edgeElement.classList.add("relaxed");
+              }
+            } else if (this.relaxedEdges.has(`${from}-${to}`)) {
+              edgeElement.classList.add("relaxed");
+            }
+          });
+        }
+
+        setExplanation(text) {
+          this.explanationElement.innerHTML = `<h3>Explanation</h3><p>${text}</p>`;
+        }
+
+        relaxEdge() {
+          if (this.isComplete) return;
+
+          this.currentEdgeIndex++;
+          if (this.currentEdgeIndex >= this.edges.length) {
+            this.currentEdgeIndex = 0;
+            this.currentIteration++;
+          }
+
+          // Check for termination
+          if (this.currentIteration >= this.nodes.length) {
+            if (!this.checkNegativeCycle()) {
+              this.setExplanation("Algorithm complete! All shortest paths have been found.");
+              this.isComplete = true;
+              this.isPlaying = false;
+              this.updateEdgeStyles();
+              this.stopAnimation();
+            }
+            return;
+          }
+
+          const edge = this.edges[this.currentEdgeIndex];
+          const fromNode = this.nodes.find(n => n.id === edge.from);
+          const toNode = this.nodes.find(n => n.id === edge.to);
+
+          if (this.distances[edge.from] === Infinity) {
+            this.setExplanation(`Skipping edge ${fromNode.label} → ${toNode.label} because ${fromNode.label} is not reachable.`);
+          } else {
+            const newDistance = this.distances[edge.from] + edge.weight;
+            if (newDistance < this.distances[edge.to]) {
+              this.distances[edge.to] = newDistance;
+              this.predecessors[edge.to] = edge.from;
+              this.relaxedEdges.add(`${edge.from}-${edge.to}`);
+              this.setExplanation(`Relaxed edge ${fromNode.label} → ${toNode.label}. Updated distance to ${toNode.label}: ${newDistance}`);
+            } else {
+              this.setExplanation(`No relaxation for edge ${fromNode.label} → ${toNode.label}.`);
+            }
+          }
+
+          this.updateDistanceLabels();
+          this.updateEdgeStyles();
+        }
+
+        checkNegativeCycle() {
+          for (const edge of this.edges) {
+            if (this.distances[edge.from] !== Infinity && this.distances[edge.from] + edge.weight < this.distances[edge.to]) {
+              this.negativeCycleEdge = edge;
+              this.updateEdgeStyles();
+              this.setExplanation("Negative cycle detected! The algorithm has found a cycle with a total negative weight.");
+              this.isComplete = true;
+              this.isPlaying = false;
+              this.stopAnimation();
+              return true;
+            }
+          }
+          return false;
+        }
+
+        resetVisualization() {
+          this.stopAnimation();
+          this.initializeVariables();
+          this.drawGraph();
+          this.updateDistanceLabels();
+          this.setExplanation("Algorithm reset. Starting from source node S.");
+          this.updatePlayPauseButton();
+        }
+
+        toggleGraph() {
+          this.currentGraphKey = this.currentGraphKey === 'withoutNegativeCycle' ? 'withNegativeCycle' : 'withoutNegativeCycle';
+          this.resetVisualization();
+        }
+
+        updatePlayPauseButton() {
+          const btn = document.getElementById("playPauseBtn");
+          btn.textContent = this.isPlaying ? "⏸ Pause" : "▶ Play";
+        }
+
+        stepForward() {
+          if (!this.isComplete && !this.isPlaying) {
+            this.relaxEdge();
+          }
+        }
+
+        togglePlayPause() {
+          if (this.isComplete) return;
+          this.isPlaying = !this.isPlaying;
+          this.updatePlayPauseButton();
+
+          if (this.isPlaying) {
+            this.startAnimation();
+          } else {
+            this.stopAnimation();
+          }
+        }
+
+        startAnimation() {
+          this.animationInterval = setInterval(() => {
+            if (this.isPlaying && !this.isComplete) {
+              this.relaxEdge();
+            } else {
+              this.stopAnimation();
+            }
+          }, 1000); // Adjust the interval (milliseconds) to control speed
+        }
+
+        stopAnimation() {
+          clearInterval(this.animationInterval);
+        }
+
+        setupEventListeners() {
+          document.getElementById("playPauseBtn").addEventListener("click", () => this.togglePlayPause());
+          document.getElementById("stepBtn").addEventListener("click", () => this.stepForward());
+          document.getElementById("resetBtn").addEventListener("click", () => this.resetVisualization());
+          document.getElementById("toggleGraphBtn").addEventListener("click", () => this.toggleGraph());
+        }
+      }
+
+      // Initialize Visualization
+      const svgElement = document.getElementById("svgGraph");
+      const explanationElement = document.getElementById("explanation");
+
+      const graphVisualization = new GraphVisualization(svgElement, explanationElement);
+    })();
+  </script>
+</body>
+
+</html>

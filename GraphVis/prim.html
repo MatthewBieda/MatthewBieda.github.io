@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Prim's Algorithm Visualization</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Styles -->
+  <style>
+    /* Reset and base styles */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+
+    h1 {
+      color: #2a9d8f;
+      margin: 20px 0;
+    }
+
+    .explanation {
+      font-size: 16px;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto 20px auto;
+      line-height: 1.6;
+      text-align: justify;
+    }
+
+    .controls {
+      margin: 20px;
+    }
+
+    button {
+      background-color: #2a9d8f;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin: 5px;
+    }
+
+    button:hover {
+      background-color: #21867a;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    #graph {
+      margin: 0 auto;
+      display: inline-block;
+      width: 800px;
+      border: 1px solid #ddd;
+      background-color: #ffffff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    svg {
+      display: block;
+      margin: 0 auto;
+      width: 100%;
+      height: auto;
+    }
+
+    .node {
+      fill: lightblue;
+      stroke: black;
+      stroke-width: 2px;
+    }
+
+    .node-label {
+      font-size: 14px;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      fill: black;
+    }
+
+    .edge {
+      stroke: black;
+      stroke-width: 2px;
+    }
+
+    .edge.mst-edge {
+      stroke: #e76f51;
+      stroke-width: 4px;
+    }
+
+    .weight-label {
+      font-size: 12px;
+      fill: #333;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      background: #fff;
+      padding: 2px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Prim's Algorithm Visualization</h1>
+
+  <div class="explanation">
+    <p>
+      <strong>Prim's Algorithm</strong> is a greedy algorithm used to find the Minimum Spanning Tree (MST) of a
+      connected, undirected graph.
+      It starts with an arbitrary node and grows the MST one edge at a time by adding the smallest edge
+      that connects a vertex in the MST to a vertex outside the MST. This visualization demonstrates the
+      step-by-step growth of the MST.
+    </p>
+    <p>
+      A <strong>priority queue</strong> is used to efficiently find the smallest edge connecting the MST to the rest of
+      the graph.
+    </p>
+  </div>
+
+  <div class="controls">
+    <button id="startButton">Start Prim's Algorithm</button>
+    <button id="resetButton">Reset</button>
+  </div>
+
+  <div id="graph">
+    <svg id="svgGraph" width="800" height="600" viewBox="70 100 600 350"></svg>
+  </div>
+
+  <p>Note: I would prefer Kruskal's because the implementation is simpler and it naturally handles disconnected
+    graphs.</p>
+
+  <script>
+    // Encapsulate the visualization in a class
+    class PrimsAlgorithmVisualization {
+      constructor(svgElement) {
+        this.svg = svgElement;
+        this.nodes = [];
+        this.edges = [];
+        this.mstEdges = [];
+        this.visitedNodes = new Set();
+        this.edgeQueue = [];
+        this.animationInterval = null;
+        this.isRunning = false;
+
+        this.initializeGraph();
+        this.drawGraph();
+        this.setupEventListeners();
+      }
+
+      initializeGraph() {
+        // Define nodes and edges
+        this.nodes = [
+          {id: 'A', x: 150, y: 150},
+          {id: 'B', x: 300, y: 100},
+          {id: 'C', x: 500, y: 150},
+          {id: 'D', x: 200, y: 300},
+          {id: 'E', x: 400, y: 300},
+          {id: 'F', x: 600, y: 400},
+          {id: 'G', x: 350, y: 450},
+          {id: 'H', x: 150, y: 450}
+        ];
+
+        this.edges = [
+          {from: 'A', to: 'B', weight: 3},
+          {from: 'A', to: 'D', weight: 1},
+          {from: 'B', to: 'C', weight: 2},
+          {from: 'B', to: 'E', weight: 4},
+          {from: 'C', to: 'F', weight: 6},
+          {from: 'D', to: 'E', weight: 5},
+          {from: 'D', to: 'H', weight: 7},
+          {from: 'E', to: 'G', weight: 2},
+          {from: 'F', to: 'G', weight: 3},
+          {from: 'G', to: 'H', weight: 4}
+        ];
+      }
+
+      drawGraph() {
+        // Clear existing SVG content
+        this.svg.innerHTML = '';
+
+        // Draw edges
+        this.edges.forEach(edge => {
+          const fromNode = this.nodes.find(node => node.id === edge.from);
+          const toNode = this.nodes.find(node => node.id === edge.to);
+
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', fromNode.x);
+          line.setAttribute('y1', fromNode.y);
+          line.setAttribute('x2', toNode.x);
+          line.setAttribute('y2', toNode.y);
+          line.setAttribute('class', 'edge');
+          line.setAttribute('data-from', edge.from);
+          line.setAttribute('data-to', edge.to);
+          line.setAttribute('data-weight', edge.weight);
+          this.svg.appendChild(line);
+
+          // Draw weight labels with offset
+          const midX = (fromNode.x + toNode.x) / 2;
+          const midY = (fromNode.y + toNode.y) / 2;
+
+          // Calculate perpendicular offset
+          const offsetX = (toNode.y - fromNode.y) / 8;
+          const offsetY = -(toNode.x - fromNode.x) / 8;
+
+          const weightLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          weightLabel.setAttribute('x', midX + offsetX);
+          weightLabel.setAttribute('y', midY + offsetY);
+          weightLabel.setAttribute('class', 'weight-label');
+          weightLabel.textContent = edge.weight;
+          this.svg.appendChild(weightLabel);
+        });
+
+        // Draw nodes
+        this.nodes.forEach(node => {
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', node.x);
+          circle.setAttribute('cy', node.y);
+          circle.setAttribute('r', 20);
+          circle.setAttribute('class', 'node');
+          circle.setAttribute('id', `node-${node.id}`);
+          this.svg.appendChild(circle);
+
+          const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          label.setAttribute('x', node.x);
+          label.setAttribute('y', node.y);
+          label.setAttribute('class', 'node-label');
+          label.textContent = node.id;
+          this.svg.appendChild(label);
+        });
+      }
+
+      setupEventListeners() {
+        document.getElementById('startButton').addEventListener('click', () => this.startAlgorithm());
+        document.getElementById('resetButton').addEventListener('click', () => this.resetVisualization());
+      }
+
+      startAlgorithm() {
+        if (this.isRunning) return;
+        this.isRunning = true;
+        document.getElementById('startButton').disabled = true;
+
+        this.visitedNodes.clear();
+        this.mstEdges = [];
+        this.edgeQueue = [];
+
+        const startNode = this.nodes[0].id; // Start from the first node
+        this.visitedNodes.add(startNode);
+        this.addEdgesToQueue(startNode);
+
+        this.animationInterval = setInterval(() => this.processNextEdge(), 1000);
+      }
+
+      addEdgesToQueue(nodeId) {
+        // Add all edges connected to `nodeId` to the priority queue
+        this.edges.forEach(edge => {
+          if ((edge.from === nodeId && !this.visitedNodes.has(edge.to)) ||
+            (edge.to === nodeId && !this.visitedNodes.has(edge.from))) {
+            this.edgeQueue.push(edge);
+          }
+        });
+
+        // Maintain the priority queue sorted by weight
+        this.edgeQueue.sort((a, b) => a.weight - b.weight);
+      }
+
+      processNextEdge() {
+        if (this.mstEdges.length >= this.nodes.length - 1 || this.edgeQueue.length === 0) {
+          clearInterval(this.animationInterval);
+          this.isRunning = false;
+          document.getElementById('startButton').disabled = false;
+          return;
+        }
+
+        const smallestEdge = this.edgeQueue.shift();
+
+        const {from, to} = smallestEdge;
+        const nextNode = this.visitedNodes.has(from) ? to : from;
+
+        if (this.visitedNodes.has(nextNode)) {
+          // Both nodes are already visited; skip this edge
+          this.processNextEdge(); // Recursive call to process the next edge
+          return;
+        }
+
+        this.visitedNodes.add(nextNode);
+        this.mstEdges.push(smallestEdge);
+        this.addEdgesToQueue(nextNode);
+
+        // Highlight the edge in the SVG
+        const line = this.svg.querySelector(
+          `.edge[data-from="${smallestEdge.from}"][data-to="${smallestEdge.to}"], 
+           .edge[data-from="${smallestEdge.to}"][data-to="${smallestEdge.from}"]`
+        );
+        if (line) {
+          line.classList.add('mst-edge');
+        }
+      }
+
+      resetVisualization() {
+        clearInterval(this.animationInterval);
+        this.isRunning = false;
+        document.getElementById('startButton').disabled = false;
+        this.visitedNodes.clear();
+        this.mstEdges = [];
+        this.edgeQueue = [];
+        this.drawGraph();
+      }
+    }
+
+    // Initialize the visualization
+    document.addEventListener('DOMContentLoaded', () => {
+      const svgElement = document.getElementById('svgGraph');
+      const visualization = new PrimsAlgorithmVisualization(svgElement);
+    });
+  </script>
+</body>
+
+</html>

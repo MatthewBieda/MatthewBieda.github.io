@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DFS Visualization</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <h1>DFS Traversal</h1>
+  <div id="graph-container">
+    <svg width="800" height="350">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="grey" />
+        </marker>
+      </defs>
+
+      <!-- Graph nodes -->
+      <circle id="node1" cx="100" cy="100" r="20" class="node"></circle>
+      <circle id="node2" cx="250" cy="50" r="20" class="node"></circle>
+      <circle id="node3" cx="250" cy="150" r="20" class="node"></circle>
+      <circle id="node4" cx="400" cy="100" r="20" class="node"></circle>
+      <circle id="node5" cx="550" cy="50" r="20" class="node"></circle>
+      <circle id="node6" cx="550" cy="150" r="20" class="node"></circle>
+      <circle id="node7" cx="700" cy="100" r="20" class="node"></circle>
+      <circle id="node8" cx="400" cy="250" r="20" class="node"></circle>
+      <circle id="node9" cx="250" cy="250" r="20" class="node"></circle>
+      <circle id="node10" cx="550" cy="250" r="20" class="node"></circle>
+
+      <!-- Node labels -->
+      <text x="100" y="105" class="node-label">1</text>
+      <text x="250" y="55" class="node-label">2</text>
+      <text x="250" y="155" class="node-label">3</text>
+      <text x="400" y="105" class="node-label">4</text>
+      <text x="550" y="55" class="node-label">5</text>
+      <text x="550" y="155" class="node-label">6</text>
+      <text x="700" y="105" class="node-label">7</text>
+      <text x="400" y="255" class="node-label">8</text>
+      <text x="250" y="255" class="node-label">9</text>
+      <text x="550" y="255" class="node-label">10</text>
+
+      <!-- Graph edges will be drawn dynamically in script.js -->
+    </svg>
+  </div>
+
+  <div class="button-container">
+    <label for="graph-type">Select Graph Type: </label>
+    <select id="graph-type">
+      <option value="directed">Directed</option>
+      <option value="undirected">Undirected</option>
+    </select>
+
+    <button onclick="visualization.start()">Start DFS</button>
+    <button onclick="visualization.reset()">Reset</button>
+    <label for="speed">Traversal Delay (ms): </label>
+    <input id="speed" type="number" value="1000" min="100" max="3000" step="100">
+  </div>
+
+  <section id="explanation">
+    <h2>Explanation</h2>
+    <p><strong>Note:</strong> In binary trees, DFS traversals can be further categorised as Preorder, Postorder, and
+      Inorder.</p>
+    <p>
+      Note that the implementation of DFS does require adjustments depending on whether the graph is
+      directed or undirected.<br>
+      In a directed graph, edges are unidirectional, so an edge from A to B doesn't imply an edge from B to A.
+      Thus, the adjacency list or matrix reflects only the defined direction.<br>
+      In an undirected graph, every edge is bidirectional. When you add an edge between two nodes, both nodes
+      link to each other. For instance, if there's an edge between A and B, both A → B and B → A are
+      implicitly available.
+    </p>
+    <p>
+      Detecting cycles in directed graphs requires additional handling, such as tracking nodes in the current
+      recursion stack (or marking nodes as "in progress") since back edges can indicate a cycle.<br>
+      In an undirected graph, cycles can be detected by checking for nodes already visited, with one added step
+      to ensure we aren't mistaking the parent node (the node that directed us here) as part of a cycle.
+    </p>
+    <p>
+      DFS on a weighted graph operates the same as it would in an unweighted graph in terms of basic
+      traversal, simply checking reachability from one node to another. The weights on edges don't influence the
+      traversal order, as DFS doesn't consider edge costs; it explores along any available path.<br>
+      For tasks that require evaluating edge weights, like finding the shortest path or constructing a Minimum
+      Spanning Tree, specialized algorithms such as <strong><a href="dijkstra.html">Dijkstra</a></strong>,
+      <strong><a href="bellman-ford.html">Bellman-Ford</a></strong>, <strong><a href="prim.html">Prim</a></strong>, and
+      <strong><a href="kruskal.html">Kruskal</a></strong> are more appropriate.
+    </p>
+  </section>
+
+  <script src="dfs.js"></script>
+</body>
+
+</html>

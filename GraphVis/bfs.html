@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BFS Visualization</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <h1>BFS Traversal</h1>
+  <div id="graph-container">
+    <svg width="800" height="400">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="grey" />
+        </marker>
+      </defs>
+
+      <!-- Graph nodes -->
+      <circle id="node1" cx="100" cy="200" r="20" class="node"></circle>
+      <circle id="node2" cx="250" cy="100" r="20" class="node"></circle>
+      <circle id="node3" cx="250" cy="300" r="20" class="node"></circle>
+      <circle id="node4" cx="400" cy="50" r="20" class="node"></circle>
+      <circle id="node5" cx="400" cy="150" r="20" class="node"></circle>
+      <circle id="node6" cx="400" cy="250" r="20" class="node"></circle>
+      <circle id="node7" cx="400" cy="350" r="20" class="node"></circle>
+      <circle id="node8" cx="550" cy="100" r="20" class="node"></circle>
+      <circle id="node9" cx="550" cy="300" r="20" class="node"></circle>
+      <circle id="node10" cx="700" cy="200" r="20" class="node"></circle>
+
+      <!-- Node labels -->
+      <text x="100" y="205" class="node-label">1</text>
+      <text x="250" y="105" class="node-label">2</text>
+      <text x="250" y="305" class="node-label">3</text>
+      <text x="400" y="55" class="node-label">4</text>
+      <text x="400" y="155" class="node-label">5</text>
+      <text x="400" y="255" class="node-label">6</text>
+      <text x="400" y="355" class="node-label">7</text>
+      <text x="550" y="105" class="node-label">8</text>
+      <text x="550" y="305" class="node-label">9</text>
+      <text x="700" y="205" class="node-label">10</text>
+
+      <!-- Graph edges will be drawn dynamically in script.js -->
+    </svg>
+  </div>
+
+  <div class="button-container">
+    <label for="graph-type">Select Graph Type: </label>
+    <select id="graph-type">
+      <option value="directed">Directed</option>
+      <option value="undirected">Undirected</option>
+    </select>
+
+    <button onclick="visualization.start()">Start BFS</button>
+    <button onclick="visualization.reset()">Reset</button>
+    <label for="speed">Traversal Delay (ms): </label>
+    <input id="speed" type="number" value="1000" min="100" max="3000" step="100">
+  </div>
+
+  <section id="explanation">
+    <h2>Explanation</h2>
+    <p><strong>Note:</strong> In binary trees, BFS traversal is also known as the level-order traversal.</p>
+    <p>
+      One unique advantage of BFS is its ability to find the shortest path in an <strong>unweighted graph</strong>
+      or a graph with <strong>uniform weights</strong>. Since BFS explores nodes level by level, the first time it
+      reaches a node, it has found the shortest path to that node in terms of edge count.<br>
+      This property makes BFS particularly useful in scenarios where we need the shortest path in terms of the
+      number of edges, such as finding the minimum number of moves in a game-like grid.
+    </p>
+    <p>
+      However, in a weighted graph where edges have varying weights, BFS cannot guarantee the shortest path. In
+      such cases, algorithms like <strong><a href="dijkstra.html">Dijkstra</a></strong> or <strong><a
+          href="dijkstra.html">Bellman-Ford</a></strong> are necessary to
+      take the edge weights into account and accurately compute the shortest path.
+    </p>
+  </section>
+
+
+
+  <script src="bfs.js"></script>
+</body>
+
+</html>

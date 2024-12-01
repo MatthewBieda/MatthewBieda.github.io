@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algorithm Time Complexities</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    h2 {
+      margin-top: 20px;
+      color: #4caf50;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    table th,
+    table td {
+      border: 1px solid #ddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    table th {
+      background-color: #f2f2f2;
+      color: #333;
+    }
+
+    table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Algorithm Time Complexities</h1>
+
+    <h2>Exploration</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Algorithm</th>
+          <th>Time Complexity</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>BFS</td>
+          <td>O(V + E)</td>
+          <td>Traverses the graph level by level.</td>
+        </tr>
+        <tr>
+          <td>DFS</td>
+          <td>O(V + E)</td>
+          <td>Explores as deep as possible before backtracking.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Shortest Path</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Algorithm</th>
+          <th>Time Complexity</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dijkstra</td>
+          <td>O((V + E) log V)</td>
+          <td>Single-source shortest path using a priority queue.</td>
+        </tr>
+        <tr>
+          <td>Bellman-Ford</td>
+          <td>O(VE)</td>
+          <td>Finds shortest paths from a single source, handles negative weights.</td>
+        </tr>
+        <tr>
+          <td>A*</td>
+          <td>O(E)</td>
+          <td>Optimized for heuristic-based pathfinding.</td>
+        </tr>
+        <tr>
+          <td>Floyd-Warshall</td>
+          <td>O(V³)</td>
+          <td>Finds shortest paths between all pairs of nodes.</td>
+        </tr>
+        <tr>
+          <td>Johnson</td>
+          <td>O(V² log V + VE)</td>
+          <td>Handles negative weights for all pairs shortest paths.</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2>Minimum Spanning Tree</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Algorithm</th>
+          <th>Time Complexity</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Kruskal</td>
+          <td>O(E log E)</td>
+          <td>Greedy algorithm using edge sorting and a disjoint set to avoid cycles.</td>
+        </tr>
+        <tr>
+          <td>Prim</td>
+          <td>O((V + E) log V)</td>
+          <td>Greedy algorithm using a priority queue to grow the MST incrementally.</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2>Strongly-connected Components</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Algorithm</th>
+          <th>Time Complexity</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tarjan</td>
+          <td>O(V + E)</td>
+          <td>DFS-based algorithm for finding SCCs.</td>
+        </tr>
+        <tr>
+          <td>Kosaraju</td>
+          <td>O(V + E)</td>
+          <td>Uses two passes of DFS to find SCCs.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Topological Ordering</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Algorithm</th>
+          <th>Time Complexity</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Kahn</td>
+          <td>O(V + E)</td>
+          <td>Iterative algorithm for ordering directed acyclic graphs.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Maximum Flow</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Algorithm</th>
+          <th>Time Complexity</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Edmonds-Karp</td>
+          <td>O(VE²)</td>
+          <td>Finds maximum flow using BFS for augmenting paths.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+
+</html>

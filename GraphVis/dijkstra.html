@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dijkstra Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2a9d8f;
+        }
+
+        .node {
+            fill: lightblue;
+            stroke: black;
+            stroke-width: 2px;
+        }
+
+        .node.visited {
+            fill: lightgreen;
+        }
+
+        .node.target {
+            fill: red;
+        }
+
+        .edge {
+            stroke: gray;
+            stroke-width: 2;
+        }
+
+        .edge.shortest-path {
+            stroke: gold;
+            stroke-width: 4;
+        }
+
+        .edge-weight {
+            font-size: 12px;
+            fill: black;
+            font-family: Arial, sans-serif;
+        }
+
+        .node-distance {
+            font-size: 14px;
+            font-weight: bold;
+            fill: black;
+            text-anchor: middle;
+            alignment-baseline: middle;
+        }
+
+        .node-label {
+            font-size: 14px;
+            font-weight: bold;
+            fill: black;
+            text-anchor: middle;
+            alignment-baseline: middle;
+        }
+
+        .reset-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #2a9d8f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .reset-btn:hover {
+            background-color: #45a049;
+        }
+
+        .info {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        ol,
+        ul {
+            padding-left: 20px;
+        }
+
+        .key-concepts ul {
+            list-style-type: square;
+        }
+
+        .info p {
+            line-height: 1.6;
+        }
+
+        .note {
+            background-color: #f0f8ff;
+            border-left: 5px solid #00f;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .button-container {
+            text-align: center;
+
+        }
+
+        svg {
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            border: 2px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Dijkstra's Algorithm Visualization</h1>
+    <svg id="graph" width="800" height="500" viewBox="0 0 600 400"></svg>
+
+    <div class="button-container">
+        <button id="start-btn" class="reset-btn">Start Dijkstra</button>
+        <button class="reset-btn" id="reset-btn">Reset</button>
+    </div>
+
+    <div class="info">
+        <h1>Dijkstra's Algorithm: Step-by-Step Guide</h1>
+        <p><strong>Dijkstra's Algorithm</strong> is a famous algorithm used to find the <strong>shortest path</strong>
+            from a starting node to all other nodes in a graph. It is widely applied in routing and navigation systems,
+            network optimization, and many other fields.</p>
+
+        <p>This visualization will walk you through each step of the algorithm and help you understand how it works,
+            starting from the initialization to the final path discovery.</p>
+
+        <h2>How It Works</h2>
+
+        <ol>
+            <li><strong>Initialization:</strong> All nodes are initially assigned a <strong>tentative distance</strong>
+                of <code>infinity</code>, except for the start node, which has a distance of <code>0</code>. This means
+                all nodes are "far away" initially.</li>
+
+            <li><strong>Choosing the Next Node:</strong> At each step, the algorithm selects the unvisited node with the
+                smallest tentative distance. This is efficiently achieved using a <strong>priority queue</strong>, such
+                as a min-heap. If there are multiple nodes with the same smallest distance, one is chosen arbitrarily,
+                as it doesn't impact the result.</li>
+
+            <li><strong>Relaxation (Updating Distances):</strong> For the selected node, the algorithm checks its
+                neighbors. If traveling from the current node to a neighbor results in a shorter path than previously
+                known, the neighbor’s distance is updated.</li>
+
+            <li><strong>Marking Nodes as Visited:</strong> After considering all neighboring nodes, the current node is
+                marked as visited (colored green), and its shortest distance is finalized. The algorithm will never
+                revisit a visited node because the shortest path to it has already been determined.</li>
+
+            <li><strong>Repetition:</strong> The algorithm repeats the process of selecting the node with the smallest
+                distance, updating its neighbors, and marking it as visited until all nodes are visited or the
+                destination is reached.</li>
+
+            <li><strong>Destination Node:</strong> Once the destination node is visited, it is marked in red to show
+                that the shortest path has been found.</li>
+
+            <li><strong>The Golden Path:</strong> Finally, the shortest path (golden path) from the start node to the
+                destination node is highlighted, showing the optimal route.</li>
+        </ol>
+
+        <h2 class="key-concepts">Key Concepts:</h2>
+        <ul>
+            <li><strong>Tentative Distance:</strong> The current known shortest distance from the start node to each
+                node.</li>
+            <li><strong>Greedy Approach:</strong> Dijkstra's algorithm always chooses the closest node to expand first,
+                gradually discovering the shortest path.</li>
+            <li><strong>Arbitrary Node Selection:</strong> When multiple unvisited nodes have the same tentative
+                distance, one is arbitrarily chosen. This doesn’t affect the algorithm's correctness because all choices
+                are equivalent at that point.</li>
+            <li><strong>Graph Requirements:</strong> Dijkstra's algorithm assumes that edge weights are
+                <strong>non-negative</strong>. Negative edge weights can create cycles that continually decrease the
+                path length, causing the algorithm to fail in finding the shortest path. If negative weights are
+                present, algorithms like Bellman-Ford are needed
+                instead.
+            </li>
+        </ul>
+
+        <h2>Why It Works</h2>
+        <p><strong>Dijkstra’s Algorithm</strong> guarantees finding the shortest path because it processes nodes in
+            order of their known shortest distance. By always expanding the closest node, it ensures that the shortest
+            path to each node is found as the algorithm progresses.</p>
+
+        <h2>Beyond Binary Heaps</h2>
+        <p>
+            An exotic data structure known as a <strong>Fibonacci Heap</strong> can be used to implement the priority
+            queue for better theoretical time complexity, reducing the algorithm's running time from <strong>O((V + E)
+                log V)</strong> to <strong>O(E + V log V)</strong>. However, Fibonacci Heaps are complex and have large
+            constant
+            factors, which can make them less practical for real-world applications.
+        </p>
+    </div>
+    <script>
+        class DijkstraVisualization {
+            constructor() {
+                this.svg = document.getElementById("graph");
+                this.nodes = {
+                    node1: {cx: 100, cy: 100, label: 'A'},
+                    node2: {cx: 300, cy: 100, label: 'B'},
+                    node3: {cx: 200, cy: 200, label: 'C'},
+                    node4: {cx: 400, cy: 200, label: 'D'},
+                    node5: {cx: 100, cy: 300, label: 'E'},
+                    node6: {cx: 300, cy: 300, label: 'F'},
+                    node7: {cx: 500, cy: 300, label: 'G'},
+                    node8: {cx: 200, cy: 350, label: 'H'},
+                };
+                this.edges = [
+                    {from: "node1", to: "node2", weight: 4},
+                    {from: "node1", to: "node3", weight: 2},
+                    {from: "node2", to: "node4", weight: 5},
+                    {from: "node3", to: "node4", weight: 2},
+                    {from: "node3", to: "node5", weight: 7},
+                    {from: "node5", to: "node6", weight: 3},
+                    {from: "node6", to: "node7", weight: 1},
+                    {from: "node6", to: "node8", weight: 2},
+                    {from: "node7", to: "node8", weight: 4},
+                    {from: "node2", to: "node6", weight: 10},
+                    {from: "node3", to: "node8", weight: 8},
+                ];
+                this.distances = {};
+                this.previous = {};
+                this.visited = new Set();
+                this.targetNode = "node7";
+                this.initGraph();  // Initial graph rendering on page load
+            }
+
+            initGraph() {
+                // Draw edges first
+                this.edges.forEach(edge => this.drawEdge(edge));
+
+                // Draw nodes
+                Object.keys(this.nodes).forEach(nodeId => this.drawNode(nodeId));
+
+                // Highlight target node
+                const targetElement = document.getElementById(this.targetNode);
+                targetElement.classList.add("target");
+
+                // Initial distance labels, set the start node's distance to 0
+                Object.keys(this.nodes).forEach(nodeId => {
+                    this.updateDistance(nodeId, nodeId === "node1" ? "0" : "∞");
+                });
+            }
+
+            drawNode(nodeId) {
+                const {cx, cy, label} = this.nodes[nodeId];
+
+                // Create the node circle
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", cx);
+                circle.setAttribute("cy", cy);
+                circle.setAttribute("r", 20);
+                circle.setAttribute("id", nodeId);
+                circle.setAttribute("class", "node");
+                this.svg.appendChild(circle);
+
+                // Add the node label (alphabetical)
+                const nodeLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                nodeLabel.setAttribute("x", cx);
+                nodeLabel.setAttribute("y", cy + 5); // Adjust for vertical centering
+                nodeLabel.setAttribute("class", "node-label");
+                nodeLabel.textContent = label; // Use the label from the nodes object
+                this.svg.appendChild(nodeLabel);
+
+                // Add distance text above the node
+                const distanceText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                distanceText.setAttribute("x", cx);
+                distanceText.setAttribute("y", cy - 25); // Position above the node
+                distanceText.setAttribute("class", "node-distance");
+                distanceText.setAttribute("id", nodeId + "-distance");
+                this.svg.appendChild(distanceText);
+            }
+            drawEdge(edge) {
+                const {from, to, weight} = edge;
+                const fromNode = this.nodes[from];
+                const toNode = this.nodes[to];
+
+                // Draw the edge line
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", fromNode.cx);
+                line.setAttribute("y1", fromNode.cy);
+                line.setAttribute("x2", toNode.cx);
+                line.setAttribute("y2", toNode.cy);
+                line.setAttribute("class", "edge");
+                this.svg.appendChild(line);
+
+                // Position the weight close to the start of the edge (fromNode)
+                const offset = 35;  // Offset from the 'from' node to avoid overlap with the node
+                const yOffset = 17;  // Additional Y offset for better separation
+
+                const dx = toNode.cx - fromNode.cx; // Difference in X coordinates (edge direction)
+                const dy = toNode.cy - fromNode.cy; // Difference in Y coordinates (edge direction)
+                const length = Math.sqrt(dx * dx + dy * dy); // Length of the edge
+
+                // Calculate the position for the weight along the edge
+                const weightX = fromNode.cx + (dx / length) * offset;
+                const weightY = fromNode.cy + (dy / length) * offset + yOffset; // Apply Y offset
+
+                // Draw the edge weight near the start of the edge
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", weightX);
+                text.setAttribute("y", weightY);
+                text.setAttribute("class", "edge-weight");
+                text.textContent = weight;
+                this.svg.appendChild(text);
+            }
+
+            updateDistance(nodeId, distance) {
+                const distanceElement = document.getElementById(nodeId + "-distance");
+                if (distanceElement) {
+                    distanceElement.textContent = distance === Infinity ? "∞" : distance;
+                }
+            }
+
+            highlightNode(node, className) {
+                const nodeElement = document.getElementById(node);
+                if (nodeElement) nodeElement.classList.add(className);
+            }
+
+            async start() {
+                // Initialize distances and previous nodes
+                Object.keys(this.nodes).forEach(node => {
+                    this.distances[node] = Infinity;
+                    this.previous[node] = null;
+                });
+                this.distances["node1"] = 0;
+
+                const unvisited = new Set(Object.keys(this.nodes));
+
+                while (unvisited.size > 0) {
+                    // Get the node with the smallest distance
+                    const currentNode = [...unvisited].reduce((minNode, node) =>
+                        this.distances[node] < this.distances[minNode] ? node : minNode
+                    );
+
+                    unvisited.delete(currentNode);
+                    this.visited.add(currentNode);
+
+                    // Highlight node as visited and update distance
+                    this.highlightNode(currentNode, "visited");
+                    this.updateDistance(currentNode, this.distances[currentNode]);
+
+                    if (currentNode === this.targetNode) break;
+
+                    await this.updateNeighbors(currentNode);
+                }
+
+                // Highlight shortest path
+                this.highlightShortestPath();
+            }
+
+            async updateNeighbors(node) {
+                // Find neighbors and update distances
+                const neighbors = this.edges.filter(edge => edge.from === node || edge.to === node);
+                for (let edge of neighbors) {
+                    const neighbor = edge.from === node ? edge.to : edge.from;
+                    if (this.visited.has(neighbor)) continue;
+
+                    const alt = this.distances[node] + edge.weight;
+                    if (alt < this.distances[neighbor]) {
+                        this.distances[neighbor] = alt;
+                        this.previous[neighbor] = node;
+                    }
+
+                    // Update distance with a slight delay
+                    this.updateDistance(neighbor, this.distances[neighbor]);
+                    await this.delay(1500);
+                }
+            }
+
+            highlightShortestPath() {
+                let currentNode = this.targetNode;
+                while (this.previous[currentNode]) {
+                    const prevNode = this.previous[currentNode];
+                    const edge = this.edges.find(edge =>
+                        (edge.from === prevNode && edge.to === currentNode) ||
+                        (edge.from === currentNode && edge.to === prevNode)
+                    );
+                    if (edge) {
+                        const line = document.querySelector(`line[x1="${this.nodes[edge.from].cx}"][y1="${this.nodes[edge.from].cy}"][x2="${this.nodes[edge.to].cx}"][y2="${this.nodes[edge.to].cy}"]`);
+                        if (line) line.classList.add("shortest-path");
+                    }
+                    currentNode = prevNode;
+                }
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Automatically initialize and display the graph
+        const visualizer = new DijkstraVisualization();
+
+        document.getElementById("start-btn").addEventListener("click", () => {
+            visualizer.start();
+        });
+
+        document.getElementById("reset-btn").addEventListener("click", () => {
+            location.reload();
+        });
+    </script>
+</body>
+
+</html>

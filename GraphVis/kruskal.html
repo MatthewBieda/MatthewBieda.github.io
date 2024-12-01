@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Kruskal's Algorithm Visualization</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+
+    h1 {
+      color: #2a9d8f;
+      margin: 20px 0;
+    }
+
+    .explanation {
+      font-size: 16px;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto 20px auto;
+      line-height: 1.6;
+      text-align: justify;
+    }
+
+    .controls {
+      margin: 20px;
+    }
+
+    button {
+      background-color: #2a9d8f;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin: 5px;
+    }
+
+    button:hover {
+      background-color: #21867a;
+    }
+
+    #graph {
+      margin: 0 auto;
+      display: inline-block;
+      max-width: 800px;
+      border: 1px solid #ddd;
+      background-color: #ffffff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    svg {
+      display: block;
+      margin: 0 auto;
+      width: 100%;
+      height: auto;
+    }
+
+    .node {
+      fill: lightblue;
+      stroke: black;
+      stroke-width: 2px;
+    }
+
+    .node-label {
+      font-size: 14px;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      fill: black;
+    }
+
+    .edge {
+      stroke: black;
+      stroke-width: 2px;
+    }
+
+    .edge.mst-edge {
+      stroke: #e76f51;
+      stroke-width: 4px;
+    }
+
+    .weight-label {
+      font-size: 12px;
+      fill: #333;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Kruskal's Algorithm Visualization</h1>
+
+  <p class="explanation">
+    Kruskal's Algorithm is a greedy algorithm used to find the Minimum Spanning Tree (MST) of an undirected graph.
+    It works by sorting all edges by weight and then adding edges one by one to the MST,
+    ensuring that no cycles are formed. This visualization demonstrates the construction of the MST
+    step by step, highlighting the edges in the order they are added.<br><br>
+    The algorithm uses the <b>Union-Find</b> data structure to efficiently check if two nodes are in the same connected
+    component.
+    Union-Find supports two operations efficiently: <i>Find</i>, to determine the root of a node, and <i>Union</i>, to
+    merge two components.
+    By using path compression and union by rank, these operations run in nearly constant time.
+  </p>
+
+  <div class="controls">
+    <button id="computeMST">Start Kruskal's Algorithm</button>
+    <button id="resetButton">Reset</button>
+  </div>
+
+  <div id="graph">
+    <svg id="svgGraph" width="800" height="600" viewBox="70 100 600 350"></svg>
+  </div>
+
+  <script>
+    class UnionFind {
+      constructor(size) {
+        this.parent = Array.from({length: size}, (_, i) => i);
+        this.rank = Array(size).fill(0);
+      }
+
+      setFind(x) {
+        if (this.parent[x] !== x) {
+          this.parent[x] = this.setFind(this.parent[x]);
+        }
+        return this.parent[x];
+      }
+
+      setUnion(x, y) {
+        const rootX = this.setFind(x);
+        const rootY = this.setFind(y);
+
+        if (rootX !== rootY) {
+          if (this.rank[rootX] < this.rank[rootY]) {
+            this.parent[rootX] = rootY;
+          } else if (this.rank[rootX] > this.rank[rootY]) {
+            this.parent[rootY] = rootX;
+          } else {
+            this.parent[rootY] = rootX;
+            this.rank[rootX]++;
+          }
+        }
+      }
+
+      setConnected(x, y) {
+        return this.setFind(x) === this.setFind(y);
+      }
+    }
+
+    class KruskalMST {
+      constructor(nodes, edges) {
+        this.nodes = nodes;
+        this.edges = edges;
+        this.mst = [];
+        this.unionFind = new UnionFind(nodes.length);
+      }
+
+      sortEdgesByWeight() {
+        this.edges.sort((a, b) => a.weight - b.weight);
+      }
+
+      computeMST() {
+        this.sortEdgesByWeight();
+        for (const edge of this.edges) {
+          const fromIndex = this.getNodeIndex(edge.from);
+          const toIndex = this.getNodeIndex(edge.to);
+
+          if (!this.unionFind.setConnected(fromIndex, toIndex)) {
+            this.unionFind.setUnion(fromIndex, toIndex);
+            this.mst.push(edge);
+          }
+        }
+        return this.mst;
+      }
+
+      getNodeIndex(nodeId) {
+        return this.nodes.findIndex(node => node.id === nodeId);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const nodes = [
+        {id: "A", x: 150, y: 150},
+        {id: "B", x: 300, y: 100},
+        {id: "C", x: 500, y: 150},
+        {id: "D", x: 200, y: 300},
+        {id: "E", x: 400, y: 300},
+        {id: "F", x: 600, y: 400},
+        {id: "G", x: 350, y: 450},
+        {id: "H", x: 150, y: 450}
+      ];
+
+      const edges = [
+        {from: "A", to: "B", weight: 3},
+        {from: "A", to: "D", weight: 1},
+        {from: "B", to: "C", weight: 2},
+        {from: "B", to: "E", weight: 4},
+        {from: "C", to: "F", weight: 6},
+        {from: "D", to: "E", weight: 5},
+        {from: "D", to: "H", weight: 7},
+        {from: "E", to: "G", weight: 2},
+        {from: "F", to: "G", weight: 3},
+        {from: "G", to: "H", weight: 4}
+      ];
+
+      const svg = document.getElementById("svgGraph");
+
+      let unionFind;
+      let mst = [];
+      let kruskal;
+      let isRunning = false;
+      let animationTimeouts = [];
+
+      function adjustEdgeEndpoints(fromNode, toNode, radius = 20) {
+        const dx = toNode.x - fromNode.x;
+        const dy = toNode.y - fromNode.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const ratio = radius / distance;
+
+        const x1Adjusted = fromNode.x + dx * ratio;
+        const y1Adjusted = fromNode.y + dy * ratio;
+        const x2Adjusted = toNode.x - dx * ratio;
+        const y2Adjusted = toNode.y - dy * ratio;
+
+        return {x1: x1Adjusted, y1: y1Adjusted, x2: x2Adjusted, y2: y2Adjusted};
+      }
+
+      function drawNodes() {
+        nodes.forEach(node => {
+          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", node.x);
+          circle.setAttribute("cy", node.y);
+          circle.setAttribute("r", 20);
+          circle.setAttribute("class", "node");
+          circle.setAttribute("id", node.id);
+          svg.appendChild(circle);
+
+          const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          label.setAttribute("x", node.x);
+          label.setAttribute("y", node.y);
+          label.setAttribute("class", "node-label");
+          label.textContent = node.id;
+          svg.appendChild(label);
+        });
+      }
+
+      function drawEdges() {
+        edges.forEach(edge => {
+          const fromNode = nodes.find(node => node.id === edge.from);
+          const toNode = nodes.find(node => node.id === edge.to);
+          const {x1, y1, x2, y2} = adjustEdgeEndpoints(fromNode, toNode);
+
+          const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", x1);
+          line.setAttribute("y1", y1);
+          line.setAttribute("x2", x2);
+          line.setAttribute("y2", y2);
+          line.setAttribute("class", "edge");
+          line.setAttribute("data-from", edge.from);
+          line.setAttribute("data-to", edge.to);
+          line.setAttribute("data-weight", edge.weight);
+          svg.appendChild(line);
+
+          const midX = (x1 + x2) / 2;
+          const midY = (y1 + y2) / 2;
+          const offsetX = (y2 - y1) / 8; // Perpendicular offset for better spacing
+          const offsetY = -(x2 - x1) / 8;
+
+          const weightLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          weightLabel.setAttribute("x", midX + offsetX);
+          weightLabel.setAttribute("y", midY + offsetY);
+          weightLabel.setAttribute("class", "weight-label");
+          weightLabel.textContent = edge.weight;
+          svg.appendChild(weightLabel);
+        });
+      }
+
+      function highlightMSTEdgesAnimated(mst) {
+        let index = 0;
+
+        function highlightNextEdge() {
+          if (index < mst.length) {
+            const edge = mst[index];
+            const line = svg.querySelector(
+              `.edge[data-from="${edge.from}"][data-to="${edge.to}"], 
+               .edge[data-from="${edge.to}"][data-to="${edge.from}"]`
+            );
+            if (line) {
+              line.classList.add("mst-edge");
+            }
+            index++;
+            const timeout = setTimeout(highlightNextEdge, 1000); // 1-second delay between edges
+            animationTimeouts.push(timeout);
+          } else {
+            // Algorithm has completed
+            isRunning = false;
+            document.getElementById("computeMST").disabled = false;
+          }
+        }
+
+        highlightNextEdge();
+      }
+
+      function computeMST() {
+        if (isRunning) return; // Prevent multiple executions
+        isRunning = true;
+        document.getElementById("computeMST").disabled = true;
+
+        unionFind = new UnionFind(nodes.length);
+        kruskal = new KruskalMST(nodes, edges);
+        mst = kruskal.computeMST();
+        highlightMSTEdgesAnimated(mst);
+      }
+
+      function resetVisualization() {
+        // Clear any pending animations
+        animationTimeouts.forEach(timeout => clearTimeout(timeout));
+        animationTimeouts = [];
+        isRunning = false;
+        document.getElementById("computeMST").disabled = false;
+
+        // Clear the SVG content
+        svg.innerHTML = '';
+
+        // Re-initialize data structures
+        unionFind = new UnionFind(nodes.length);
+        mst = [];
+
+        // Redraw the nodes and edges
+        drawNodes();
+        drawEdges();
+      }
+
+      document.getElementById("computeMST").addEventListener("click", () => {
+        computeMST();
+      });
+
+      document.getElementById("resetButton").addEventListener("click", () => {
+        resetVisualization();
+      });
+
+      // Initial draw
+      drawNodes();
+      drawEdges();
+    });
+  </script>
+</body>
+
+</html>
