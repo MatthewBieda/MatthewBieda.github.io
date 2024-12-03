@@ -8,3 +8,9 @@ table td {
     text-align: center;
     vertical-align: middle;
 }
+
+/* Custom card hover effect */
+.card:hover {
+    transform: translateY(-5px);
+    transition: transform 0.2s;
+}
