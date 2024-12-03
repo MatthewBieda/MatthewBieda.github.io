@@ -1,0 +1,89 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  color: #2a9d8f;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.node {
+  fill: lightblue;
+  stroke: black;
+  stroke-width: 3;
+}
+
+.node.visited {
+  fill: lightgreen;
+}
+
+.node:hover {
+  fill: #2a9d8f;
+}
+
+.node-label {
+  font-size: 14px;
+  text-anchor: middle;
+  fill: black;
+}
+
+.edge {
+  stroke: black;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.edge.visited {
+  stroke: #e76f51;
+}
+
+.edge.cycle {
+  stroke: #d62828;
+  stroke-dasharray: 5, 5;
+}
+
+.button-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  align-items: center;
+}
+
+button,
+select,
+input {
+  padding: 8px;
+  font-size: 14px;
+}
+
+#explanation {
+  margin: 30px auto;
+  background-color: #fff;
+  padding: 0px 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  max-width: 1000px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#explanation h2 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+#explanation p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+#graph-container {
+  text-align: center;
+}
