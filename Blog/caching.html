@@ -40,12 +40,12 @@
       rel="noopener noreferrer">
       <h2>Benchmarking randomised insertions into Vector/List</h2>
     </a>
-    <p>Given this knowledge, I benchmarked random insertions into two different containers: std::vector and
+    <p>Given this knowledge, I benchmarked random insertions into two different C++ containers: std::vector and
       std::list. This allowed us to directly observe the practical
       performance differences that emerge when memory locality plays a significant role.
       As expected, the results reinforce the importance of data structure layout in memory, where contiguous memory
       structures such as vectors perform much better due to their locality. Non-contiguous data structures like
-      lists, while flexible, incur significantly higher overhead during insertion due to their scattered memory
+      lists, while flexible, incur significantly higher overhead due to their scattered memory
       access patterns.</p>
 
     <h3>Insertion Benchmark Results</h3>
