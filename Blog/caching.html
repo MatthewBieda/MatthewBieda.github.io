@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Memory Hierarchy and Data Structure Performance</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <header>
+    <h1>Understanding Memory Hierarchy and Data Structure Performance</h1>
+    <p class="intro">In this post, I explore the profound impact that CPU caches can have on the performance of
+      your programs. I also demonstrate why contiguous data structures such as vectors often outperform
+      non-contiguous ones in real-world scenarios, even if they are theoretically inferior for that particular use case.
+    </p>
+  </header>
+
+  <section class="content">
+    <a href="https://github.com/MatthewBieda/MemoryHierarchyExperiments/blob/main/cacheExperiments.cpp" target="_blank"
+      rel="noopener noreferrer">
+      <h2>Benchmarking Random Access: Cache Effects</h2>
+    </a>
+    <p>In order to explore the effects of memory hierarchy on computation speed, I conducted an experiment
+      benchmarking the time taken to access data across various cache sizes. As the data size increases, it
+      progresses through different levels of the memory hierarchy: from the fast L1 cache to the slower L2 and L3
+      caches, and eventually spilling over into the RAM. Results clearly demonstrate that as data ascends
+      through these memory levels, there is a consistent decline in bandwidth. This pattern is not only observable but
+      also critical in understanding why programs that are optimized to make the best use of CPU caches perform
+      significantly better. By ensuring that our data structures take
+      advantage of the faster cache memory, we can achieve at least 10x performance improvements in practice.</p>
+
+    <h3>Random Access Benchmark Results</h3>
+    <img src="cacheExperiment.png">
+
+    <a href="https://github.com/MatthewBieda/MemoryHierarchyExperiments/blob/main/listVsVector.cpp" target="_blank"
+      rel="noopener noreferrer">
+      <h2>Benchmarking randomised insertions into Vector/List</h2>
+    </a>
+    <p>Given this knowledge, I benchmarked random insertions into two different containers: std::vector and
+      std::list. This allowed us to directly observe the practical
+      performance differences that emerge when memory locality plays a significant role.
+      As expected, the results reinforce the importance of data structure layout in memory, where contiguous memory
+      structures such as vectors perform much better due to their locality. Non-contiguous data structures like
+      lists, while flexible, incur significantly higher overhead during insertion due to their scattered memory
+      access patterns.</p>
+
+    <h3>Insertion Benchmark Results</h3>
+    <img src="listVsVector.png">
+
+  </section>
+
+</body>
+
+</html>
