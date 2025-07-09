@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Ikari - Development Workflow</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <header>
+    <h1>Ikari - Development Workflow</h1>
+  </header>
+
+  <main class="content">
+
+    <section>
+      <h2>
+        <a href="https://www.youtube.com/watch?v=qvhzHj4EHVY" target="_blank" rel="noopener noreferrer">
+          ▶ Intro Demo
+        </a>
+      </h2>
+    </section>
+
+    <section>
+      <h2>Rendering Settings</h2>
+      <p>
+        I began by configuring Unreal Engine’s rendering settings. Since I didn’t need dynamic global illumination, I
+        disabled <strong>Lumen</strong> and opted for fully baked lighting instead. I also turned off <strong>Lumen
+          Reflections</strong> in favor of <strong>Spherical Reflection Probes</strong>, and increased the
+        <strong>Reflection Capture Resolution</strong> to 1024 for sharper, higher-fidelity reflections.
+        I disabled Mesh Distance Field generation as I wasn’t using DFAO, and turned off <strong>Nanite</strong> due to
+        my use of traditional low-poly meshes.
+      </p>
+    </section>
+
+    <section>
+      <h2>Post Processing & Forward Rendering</h2>
+      <p>
+        Most post-processing effects were disabled, including Motion Blur, Lens Flares, Chromatic Aberration, Depth of
+        Field, and Film Grain since I prefer a cleaner look. I also switched the rendering path from
+        <strong>Deferred</strong>
+        to <strong>Forward+ (Forward Shading)</strong>, which enables <strong>MSAA</strong> for crisper visuals and is
+        generally more performant (why it is recommended for VR).
+        Although Forward+ lacks the G-Buffer and some screen-space effects, Unreal Engine 5 supports
+        <strong>SSAO</strong> in forward mode, which I made use of. I added a <strong>Post Process Volume</strong> (set
+        to Infinite Extent), disabled auto-exposure, and manually increased the exposure compensation to achieve a
+        balanced look.
+      </p>
+    </section>
+
+    <section>
+      <h2>Lighting Workflow</h2>
+      <p>
+        To bake lighting effectively, I enabled the <strong>HDRI Backdrop</strong> plugin and added a high-resolution
+        HDRI for ambient light. I set the HDRI intensity to 2 for baking, then reduced it to 0.4 during gameplay for
+        subtlety.
+        I enclosed the playable area in a <strong>Lightmass Importance Volume</strong> and placed <strong>Lightmass
+          Portals</strong> at windows to better guide indirect light. Commonly rectangular lights are also added on
+        windows for direct illumination, but I found my scene looked better without them.
+        Additional <strong>Point Lights</strong> were placed in the living room with a color temperature of 4500K to
+        provide a warm, cozy feel.
+      </p>
+    </section>
+
+    <section>
+      <h2>Reflection Captures</h2>
+      <p>
+        I used multiple <strong>Sphere Reflection Capture</strong> actors, placing one at the center of each room and
+        smaller ones near reflective objects. Spheres gave better results than boxes, which is also aligned with
+        Unreal’s recommendations.
+      </p>
+    </section>
+
+    <section>
+      <h2>Mesh Import & Lightmap Setup</h2>
+      <p>
+        While importing meshes, I made sure to <strong>generate Lightmap UVs</strong> and disabled Nanite. I adjusted
+        lightmap resolution from <strong>64 to 512</strong> depending on object size.
+        The <strong>Lightmap Density view mode</strong> proved invaluable for checking resolution balance across
+        objects.
+      </p>
+    </section>
+
+    <section>
+      <h2>Lightmass & SSAO Settings</h2>
+      <p>
+        I tuned the <strong>Lightmass Settings</strong> under <em>World Settings</em> for high-quality bakes and ambient
+        occlusion, which I paired with <strong>SSAO</strong> via the post process volume.
+      </p>
+
+      <figure>
+        <img src="LightmassSettings.jpg" alt="Lightmass Settings Screenshot">
+        <figcaption>Lightmass configuration used for baked lighting and AO.</figcaption>
+      </figure>
+
+      <figure>
+        <img src="PostProcessAO.jpg" alt="Post Process AO Settings Screenshot">
+        <figcaption>Post-process volume settings for SSAO.</figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <h2>Gameplay & Interaction</h2>
+      <p>
+        I created a custom <strong>interactable interface</strong> and had all relevant Blueprint actors implement it. I
+        also developed a basic <strong>first-person character controller</strong>, and layered in audio through
+        background music and sound cues to enhance immersion.
+      </p>
+    </section>
+
+  </main>
+
+</body>
+
+</html>

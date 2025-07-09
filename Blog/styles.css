@@ -35,6 +35,13 @@ section.content {
     border-radius: 8px;
 }
 
+main.content {
+    margin: 20px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+}
+
 h2 {
     color: #2980b9;
     margin-top: 20px;
