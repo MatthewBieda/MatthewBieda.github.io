@@ -161,54 +161,84 @@
     </ul>
  
     <hr class="section-divider">
- 
-    <h2>Final Result</h2>
+     <h2>Final Result</h2>
     <p>Here is what the complete workflow looks like once you have followed the how-to below:</p>
- 
+
     <div class="demo-box">
         <h3>1. Verify no VM is running</h3>
-        <pre><code>virsh list --all
-<span class="comment"># tf-vm1 is not listed</span></code></pre>
+        <pre><code>matthew@matthew-ThinkPad-E14-Gen-6:~$ virsh list --all
+ Id   Name   State
+--------------------</code></pre>
     </div>
- 
+
     <div class="demo-box">
         <h3>2. Provision with Terraform</h3>
-        <pre><code>terraform apply
-<span class="comment"># Creates the disk, domain and network interface
-# Outputs the IP into the Ansible inventory automatically</span></code></pre>
+        <pre><code>matthew@matthew-ThinkPad-E14-Gen-6:~$ cd infra-lab/terraform/
+matthew@matthew-ThinkPad-E14-Gen-6:~/infra-lab/terraform$ terraform apply
+...
+Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+vm_ip = "192.168.122.100"</code></pre>
+        <p>Terraform creates the disk, domain and network interface, then outputs the IP directly into the Ansible inventory.</p>
     </div>
- 
+
     <div class="demo-box">
         <h3>3. Confirm tmux is not yet installed on the VM</h3>
-        <pre><code>ssh username@ip
-tmux
-<span class="comment"># Command 'tmux' not found</span></code></pre>
+        <pre><code>matthew@matthew-ThinkPad-E14-Gen-6:~/infra-lab/terraform$ ssh matt@192.168.122.100
+Welcome to elementary OS 8 (GNU/Linux 6.17.0-22-generic x86_64)
+
+matt@ElementaryOS:~$ tmux
+Command 'tmux' not found, but can be installed with:
+sudo apt install tmux</code></pre>
     </div>
- 
+
     <div class="demo-box">
         <h3>4. Configure the VM with Ansible</h3>
-        <pre><code>ansible-playbook -i inventory.ini playbook.yml
-<span class="comment"># Observe that packages were changed</span></code></pre>
+        <pre><code>matthew@matthew-ThinkPad-E14-Gen-6:~/infra-lab/ansible$ ansible-playbook -i inventory.ini playbook.yml
+
+PLAY [Base lab configuration] *************************************************
+
+TASK [Gathering Facts] ********************************************************
+ok: [vm1]
+
+TASK [Install packages] *******************************************************
+changed: [vm1]
+
+PLAY RECAP ********************************************************************
+vm1      ok=2    <span style="color:#4ec9b0;">changed=1</span>    unreachable=0    failed=0</code></pre>
+        <p><code>changed=1</code> — Ansible detected tmux was missing and installed it.</p>
     </div>
- 
+
     <div class="demo-box">
         <h3>5. Confirm tmux is now installed</h3>
-        <pre><code>ssh username@ip
-tmux
-<span class="comment"># You can now enter a tmux session</span></code></pre>
-        <p>Ansible configured the state of the VM after provisioning.</p>
+        <pre><code>matthew@matthew-ThinkPad-E14-Gen-6:~/infra-lab/ansible$ ssh matt@192.168.122.100
+matt@ElementaryOS:~$ tmux
+[exited]</code></pre>
+        <p>tmux is installed and working.</p>
     </div>
- 
+
     <div class="demo-box">
-        <h3>6. Cleanup</h3>
-        <pre><code>terraform destroy</code></pre>
+        <h3>6. Run again to demonstrate idempotency</h3>
+        <pre><code>matthew@matthew-ThinkPad-E14-Gen-6:~/infra-lab/ansible$ ansible-playbook -i inventory.ini playbook.yml
+
+PLAY RECAP ********************************************************************
+vm1      ok=2    <span style="color:#6a9955;">changed=0</span>    unreachable=0    failed=0</code></pre>
+        <p><code>changed=0</code> — Ansible verified the desired state is already satisfied and did nothing. This is idempotency in action.</p>
     </div>
- 
+
+    <div class="demo-box">
+        <h3>7. Cleanup</h3>
+        <pre><code>matthew@matthew-ThinkPad-E14-Gen-6:~/infra-lab/terraform$ terraform destroy</code></pre>
+    </div>
+
     <div class="warning-box">
         <strong>⚠ Note on repeat runs:</strong> Each <code>terraform destroy &amp;&amp; apply</code> cycle provisions a fresh VM with a new SSH host key. If Ansible fails with a host key verification error, run <code>ssh-keygen -R &lt;ip&gt;</code>, or set <code>host_key_checking = False</code> in <code>ansible.cfg</code>.
     </div>
- 
+
     <hr class="section-divider">
+
  
     <h2>How To</h2>
  
