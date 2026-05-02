@@ -181,7 +181,7 @@ Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
 Outputs:
 
 vm_ip = "192.168.122.100"</code></pre>
-        <p>Terraform creates the disk, domain and network interface, then outputs the IP directly into the Ansible inventory.</p>
+        <p>Terraform creates the disk, VM and Ansible inventory and outputs the IP.</p>
     </div>
 
     <div class="demo-box">
@@ -225,7 +225,7 @@ matt@ElementaryOS:~$ tmux
 
 PLAY RECAP ********************************************************************
 vm1      ok=2    <span style="color:#6a9955;">changed=0</span>    unreachable=0    failed=0</code></pre>
-        <p><code>changed=0</code> — Ansible verified the desired state is already satisfied and did nothing. This is idempotency in action.</p>
+        <p><code>changed=0</code> — Ansible verified the desired state is already satisfied and did nothing.</p>
     </div>
 
     <div class="demo-box">
@@ -265,7 +265,6 @@ pipx install --include-deps ansible</code></pre>
     <div class="step">
         <span class="step-number">4</span>
         <h2>Install Terraform</h2>
-        <p><em>(Please direct your complaints about this process to HashiCorp.)</em></p>
         <p>Ensure that your system is up to date and that you have installed the <code>gnupg</code> and <code>software-properties-common</code> packages. You will use these packages to verify HashiCorp's GPG signature and install HashiCorp's Debian package repository.</p>
  
         <pre><code>sudo apt-get update &amp;&amp; sudo apt-get install -y gnupg software-properties-common</code></pre>
@@ -319,15 +318,15 @@ KVM acceleration can be used</code></pre>
 KVM acceleration can NOT be used</code></pre>
         <p>Try enabling virtualization at the BIOS level.</p>
  
-        <p>In this lab we are using Virtual Machine Manager (virt-manager) to create the virtual machine using its GUI. Install it with:</p>
+        <p>In this lab we are using Virtual Machine Manager (virt-manager) to configure the base virtual machine image using its GUI. Install it with:</p>
         <pre><code>apt install virt-manager</code></pre>
         <p>Then reboot your system.</p>
  
-        <p>In this guide I will use Elementary OS (based on Ubuntu 24 LTS) for the virtual machine — feel free to use whatever distribution you like. Navigate to <a href="https://elementary.io/">https://elementary.io/</a> and download the ISO image (just enter $0 unless you wish to support the project).</p>
+        <p>In this guide I will use Elementary OS (based on Ubuntu 24 LTS) for the virtual machine, feel free to use whatever distribution you like. Navigate to <a href="https://elementary.io/">https://elementary.io/</a> and download the ISO image (just enter $0 unless you wish to support the project).</p>
  
-        <p>Now start up Virtual Machine Manager and check you can see QEMU/KVM support is working. Navigate to <strong>File → New Virtual Machine</strong> and browse for local installation media to find the ISO. Choose Ubuntu 24 LTS as the operating system since this is what Elementary is based upon — you can leave installation defaults.</p>
+        <p>Now start up Virtual Machine Manager and check you can see QEMU/KVM support is working. Navigate to <strong>File → New Virtual Machine</strong> and browse for local installation media to find the ISO. Choose Ubuntu 24 LTS as the operating system since this is what Elementary is based upon, you can leave installation defaults.</p>
  
-        <p>When you boot into the live environment, choose to install the operating system onto the virtual machine and it will reboot. I'm setting the user as <code>matt</code> — if you use something else you will need to update the Terraform <code>ansible_user</code> variable later.</p>
+        <p>When you boot into the live environment, choose to install the operating system onto the virtual machine and it will reboot. I'm setting the user as <code>matt</code>, if you use something else you will need to update the Terraform <code>ansible_user</code> variable later.</p>
  
         <p>Once the OS is installed, you should be able to use the internet fine on the VM due to NAT. Update the environment:</p>
         <pre><code>sudo apt update &amp;&amp; sudo apt upgrade</code></pre>
@@ -365,12 +364,12 @@ PermitRootLogin no</code></pre>
         <pre><code>sudo systemctl restart ssh
 systemctl status ssh</code></pre>
  
-        <p>🎉 You have now configured passwordless SSH access from the host to the virtual machine!</p>
+        <p>You have now configured passwordless SSH access from the host to the virtual machine!</p>
  
         <p>The machine image created by virt-manager is stored at <code>/var/lib/libvirt/images/ubuntu24.04.qcow2</code>. This qcow2 file is the base image Terraform will clone for each VM it provisions. If your image name is different, you will need to update the Terraform <code>base_image_path</code> variable later.</p>
  
         <div class="warning-box">
-            <strong>⚠ Important:</strong> Now that we have finished configuring the base environment, delete the virtual machine in virt-manager. Right click the VM → Delete. When prompted, <strong>uncheck the option to delete the storage volume</strong> — this preserves the qcow2 file that Terraform will use.
+            <strong>⚠ Important:</strong> Now that we have finished configuring the base environment, delete the virtual machine in virt-manager. Right click the VM → Delete. When prompted, <strong>uncheck the option to delete the storage volume</strong>, this preserves the qcow2 file that Terraform will use.
         </div>
     </div>
  
@@ -413,19 +412,15 @@ variable "ansible_user" {
  
     <hr class="section-divider">
  
-    <p>Congratulations — you now have a complete infrastructure-as-code solution and playground, self-hosted for free.</p>
+    <p>Congratulations, you now have a complete infrastructure-as-code solution and playground, self-hosted for free.</p>
  
     <div class="future-box">
-        <strong>🚀 Coming next:</strong> In a future post I plan to extend this lab into a multi-node Kubernetes cluster using kubeadm on the self-hosted virtual machines, providing a more production-like environment than Minikube or kind.
+        <strong>Coming next:</strong> In a future post I plan to extend this lab into a multi-node Kubernetes cluster using kubeadm on the self-hosted virtual machines, providing a more production-like environment than Minikube or kind.
     </div>
  
     <p>Thanks for reading!</p>
  
 </main>
- 
-<footer>
-    <p>Written by Matthew Bieda &mdash; <a href="https://github.com/MatthewBieda/HomeLabCore">View the code on GitHub</a></p>
-</footer>
  
 </body>
 </html>
