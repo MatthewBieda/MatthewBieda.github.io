@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Ansible and Terraform for Free</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Blog-specific additions on top of styles.css */
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0;
+        }
+        .tag {
+            background-color: #e8f4fd;
+            color: #2980b9;
+            border: 1px solid #2980b9;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 14px;
+        }
+        .requirements-list {
+            list-style: none;
+            padding: 0;
+        }
+        .requirements-list li {
+            padding: 6px 0 6px 24px;
+            position: relative;
+        }
+        .requirements-list li::before {
+            content: "✓";
+            color: #2980b9;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        pre {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        code {
+            background-color: #e8f4fd;
+            color: #2980b9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        .demo-box {
+            background-color: #f0f7ff;
+            border-left: 4px solid #0d6efd;
+            border-radius: 0 8px 8px 0;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        .demo-box h3 {
+            color: #0d6efd;
+            margin-top: 0;
+        }
+        .warning-box {
+            background-color: #fff8e1;
+            border-left: 4px solid #f39c12;
+            border-radius: 0 8px 8px 0;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .warning-box strong {
+            color: #f39c12;
+        }
+        .step {
+            border-top: 2px solid #e8f4fd;
+            margin-top: 28px;
+            padding-top: 20px;
+        }
+        .step-number {
+            display: inline-block;
+            background-color: #0d6efd;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 15px;
+        }
+        .step h2 {
+            display: inline;
+            vertical-align: middle;
+        }
+        p {
+            margin: 10px 0;
+        }
+        ul, ol {
+            margin: 10px 0 10px 24px;
+        }
+        li {
+            margin: 4px 0;
+        }
+        .comment {
+            color: #6a9955;
+        }
+        .section-divider {
+            border: none;
+            border-top: 3px solid #0d6efd;
+            margin: 32px 0 24px;
+        }
+        .future-box {
+            background-color: #f0fff4;
+            border-left: 4px solid #27ae60;
+            border-radius: 0 8px 8px 0;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        .future-box strong {
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+ 
+<header>
+    <h1>Learn Ansible and Terraform for Free</h1>
+    <p class="intro">Provision Self-Hosted Virtual Machines with Custom Disk Images on Linux</p>
+</header>
+ 
+<main class="content">
+ 
+    <p>In this blogpost you will learn about:</p>
+    <div class="tag-list">
+        <span class="tag">Linux KVM virtualization</span>
+        <span class="tag">VM image lifecycle</span>
+        <span class="tag">SSH access and configuration</span>
+        <span class="tag">Ansible automation</span>
+        <span class="tag">Terraform provisioning</span>
+        <span class="tag">Cloud infrastructure foundations</span>
+    </div>
+ 
+    <p>If you want hands-on experience with Ansible and Terraform, you need infrastructure to manage. Many guides recommend paying for cloud resources such as Amazon Web Services or Microsoft Azure. This article shows how to build a zero-cost local lab using your own Linux computer. We will use QEMU/KVM virtualization and the Terraform libvirt provider.</p>
+ 
+    <h3>Lab requirements</h3>
+    <ul class="requirements-list">
+        <li><strong>Linux host system:</strong> I am using Linux Mint. Any Ubuntu-based distribution should work with minimal changes. If using another Linux family, adapt package management and service commands accordingly. <em>(Windows Subsystem for Linux technically supports nested virtualization, but that is beyond the scope of this guide.)</em></li>
+        <li><strong>Personal Computer:</strong> 1 reasonably modern computer</li>
+        <li><strong>Home internet</strong></li>
+    </ul>
+ 
+    <hr class="section-divider">
+ 
+    <h2>Final Result</h2>
+    <p>Here is what the complete workflow looks like once you have followed the how-to below:</p>
+ 
+    <div class="demo-box">
+        <h3>1. Verify no VM is running</h3>
+        <pre><code>virsh list --all
+<span class="comment"># tf-vm1 is not listed</span></code></pre>
+    </div>
+ 
+    <div class="demo-box">
+        <h3>2. Provision with Terraform</h3>
+        <pre><code>terraform apply
+<span class="comment"># Creates the disk, domain and network interface
+# Outputs the IP into the Ansible inventory automatically</span></code></pre>
+    </div>
+ 
+    <div class="demo-box">
+        <h3>3. Confirm tmux is not yet installed on the VM</h3>
+        <pre><code>ssh username@ip
+tmux
+<span class="comment"># Command 'tmux' not found</span></code></pre>
+    </div>
+ 
+    <div class="demo-box">
+        <h3>4. Configure the VM with Ansible</h3>
+        <pre><code>ansible-playbook -i inventory.ini playbook.yml
+<span class="comment"># Observe that packages were changed</span></code></pre>
+    </div>
+ 
+    <div class="demo-box">
+        <h3>5. Confirm tmux is now installed</h3>
+        <pre><code>ssh username@ip
+tmux
+<span class="comment"># You can now enter a tmux session</span></code></pre>
+        <p>Ansible configured the state of the VM after provisioning.</p>
+    </div>
+ 
+    <div class="demo-box">
+        <h3>6. Cleanup</h3>
+        <pre><code>terraform destroy</code></pre>
+    </div>
+ 
+    <div class="warning-box">
+        <strong>⚠ Note on repeat runs:</strong> Each <code>terraform destroy &amp;&amp; apply</code> cycle provisions a fresh VM with a new SSH host key. If Ansible fails with a host key verification error, run <code>ssh-keygen -R &lt;ip&gt;</code>, or set <code>host_key_checking = False</code> in <code>ansible.cfg</code>.
+    </div>
+ 
+    <hr class="section-divider">
+ 
+    <h2>How To</h2>
+ 
+    <div class="step">
+        <span class="step-number">1</span>
+        <h2>Install Linux onto your hardware</h2>
+    </div>
+ 
+    <div class="step">
+        <span class="step-number">2</span>
+        <h2>Update your system</h2>
+        <pre><code>apt update &amp;&amp; apt upgrade</code></pre>
+    </div>
+ 
+    <div class="step">
+        <span class="step-number">3</span>
+        <h2>Install Ansible</h2>
+        <p>The cleanest way is to install with pipx as per the Ansible documentation:</p>
+        <pre><code>apt install pipx
+pipx ensurepath
+pipx install --include-deps ansible</code></pre>
+    </div>
+ 
+    <div class="step">
+        <span class="step-number">4</span>
+        <h2>Install Terraform</h2>
+        <p><em>(Please direct your complaints about this process to HashiCorp.)</em></p>
+        <p>Ensure that your system is up to date and that you have installed the <code>gnupg</code> and <code>software-properties-common</code> packages. You will use these packages to verify HashiCorp's GPG signature and install HashiCorp's Debian package repository.</p>
+ 
+        <pre><code>sudo apt-get update &amp;&amp; sudo apt-get install -y gnupg software-properties-common</code></pre>
+ 
+        <p>Install HashiCorp's GPG key:</p>
+        <pre><code>wget -O- https://apt.releases.hashicorp.com/gpg | \
+gpg --dearmor | \
+sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null</code></pre>
+ 
+        <p>Verify the GPG key's fingerprint:</p>
+        <pre><code>gpg --no-default-keyring \
+--keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg \
+--fingerprint</code></pre>
+ 
+        <p>The gpg command reports the key fingerprint:</p>
+        <pre><code>/usr/share/keyrings/hashicorp-archive-keyring.gpg
+-------------------------------------------------
+pub   rsa4096 XXXX-XX-XX [SC]
+      AAAA AAAA AAAA AAAA
+uid         [ unknown] HashiCorp Security (HashiCorp Package Signing) &lt;security+packaging@hashicorp.com&gt;
+sub   rsa4096 XXXX-XX-XX [E]</code></pre>
+ 
+        <p>Add the official HashiCorp repository to your system:</p>
+        <pre><code>echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+https://apt.releases.hashicorp.com \
+$(grep -oP '(?&lt;=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | \
+sudo tee /etc/apt/sources.list.d/hashicorp.list</code></pre>
+ 
+        <p>Update apt and install Terraform:</p>
+        <pre><code>sudo apt update
+sudo apt-get install terraform</code></pre>
+    </div>
+ 
+    <div class="step">
+        <span class="step-number">5</span>
+        <h2>Configure virtualization</h2>
+ 
+        <p>First check that your CPU supports virtualization:</p>
+        <pre><code>egrep -o 'vmx|svm' /proc/cpuinfo | head -1</code></pre>
+        <p>If this returns <code>vmx</code> (Intel) or <code>svm</code> (AMD), your CPU supports virtualization.</p>
+ 
+        <p>Optionally install the <code>cpu-checker</code> package and check virtualization is enabled at the BIOS level:</p>
+        <pre><code>apt install cpu-checker
+kvm-ok</code></pre>
+ 
+        <p>If output is:</p>
+        <pre><code>INFO: /dev/kvm exists
+KVM acceleration can be used</code></pre>
+        <p>You can proceed. Otherwise if you see:</p>
+        <pre><code>INFO: Your CPU does not support KVM extensions
+KVM acceleration can NOT be used</code></pre>
+        <p>Try enabling virtualization at the BIOS level.</p>
+ 
+        <p>In this lab we are using Virtual Machine Manager (virt-manager) to create the virtual machine using its GUI. Install it with:</p>
+        <pre><code>apt install virt-manager</code></pre>
+        <p>Then reboot your system.</p>
+ 
+        <p>In this guide I will use Elementary OS (based on Ubuntu 24 LTS) for the virtual machine — feel free to use whatever distribution you like. Navigate to <a href="https://elementary.io/">https://elementary.io/</a> and download the ISO image (just enter $0 unless you wish to support the project).</p>
+ 
+        <p>Now start up Virtual Machine Manager and check you can see QEMU/KVM support is working. Navigate to <strong>File → New Virtual Machine</strong> and browse for local installation media to find the ISO. Choose Ubuntu 24 LTS as the operating system since this is what Elementary is based upon — you can leave installation defaults.</p>
+ 
+        <p>When you boot into the live environment, choose to install the operating system onto the virtual machine and it will reboot. I'm setting the user as <code>matt</code> — if you use something else you will need to update the Terraform <code>ansible_user</code> variable later.</p>
+ 
+        <p>Once the OS is installed, you should be able to use the internet fine on the VM due to NAT. Update the environment:</p>
+        <pre><code>sudo apt update &amp;&amp; sudo apt upgrade</code></pre>
+    </div>
+ 
+    <div class="step">
+        <span class="step-number">6</span>
+        <h2>Configure SSH access</h2>
+ 
+        <p>Find the VM's private IP address (within the libvirt NAT network):</p>
+        <pre><code>ip a</code></pre>
+ 
+        <p>On the VM, install the OpenSSH server:</p>
+        <pre><code>sudo apt install openssh-server
+sudo systemctl enable --now ssh</code></pre>
+ 
+        <p>On the host machine, generate an SSH key pair:</p>
+        <pre><code>ssh-keygen</code></pre>
+        <p>Accept the default file path. <em>If you already have an SSH key you use for other purposes, specify a different filename with <code>-f ~/.ssh/id_ansible</code> to avoid overwriting it.</em></p>
+ 
+        <p>Copy your public key to the VM:</p>
+        <pre><code>ssh-copy-id youruser@VM_IP</code></pre>
+ 
+        <p>Validate the SSH connection:</p>
+        <pre><code>ssh youruser@VM_IP</code></pre>
+ 
+        <p>Then configure the SSH daemon on the VM:</p>
+        <pre><code>nano /etc/ssh/sshd_config</code></pre>
+ 
+        <p>Disable password authentication and root login:</p>
+        <pre><code>PasswordAuthentication no
+PermitRootLogin no</code></pre>
+ 
+        <p>Restart the SSH service to apply changes:</p>
+        <pre><code>sudo systemctl restart ssh
+systemctl status ssh</code></pre>
+ 
+        <p>🎉 You have now configured passwordless SSH access from the host to the virtual machine!</p>
+ 
+        <p>The machine image created by virt-manager is stored at <code>/var/lib/libvirt/images/ubuntu24.04.qcow2</code>. This qcow2 file is the base image Terraform will clone for each VM it provisions. If your image name is different, you will need to update the Terraform <code>base_image_path</code> variable later.</p>
+ 
+        <div class="warning-box">
+            <strong>⚠ Important:</strong> Now that we have finished configuring the base environment, delete the virtual machine in virt-manager. Right click the VM → Delete. When prompted, <strong>uncheck the option to delete the storage volume</strong> — this preserves the qcow2 file that Terraform will use.
+        </div>
+    </div>
+ 
+    <div class="step">
+        <span class="step-number">7</span>
+        <h2>Configure Ansible &amp; Terraform</h2>
+ 
+        <p>Clone the base config:</p>
+        <pre><code>git clone https://github.com/MatthewBieda/HomeLabCore.git
+cd HomeLabCore</code></pre>
+ 
+        <p>Create an Ansible vault for secure secret storage by running this from the repo root:</p>
+        <pre><code>ansible-vault create ansible/group_vars/lab/vault.yml</code></pre>
+ 
+        <p>Add your sudo password for the VM to the vault like this:</p>
+        <pre><code>ansible_become_password: &lt;vm sudo password&gt;</code></pre>
+        <p>It will be encrypted. The <code>ansible.cfg</code> file refers to the vault password file to look up the vault password automatically.</p>
+ 
+        <p>Store the vault password in a hidden file outside the project:</p>
+        <pre><code>echo "your_vault_password" > ~/.ansible_vault_pass</code></pre>
+        <p><em>For a more enterprise-ready solution you can look into Red Hat Ansible Automation Platform.</em></p>
+ 
+        <p>Now configure Terraform. Navigate to the terraform directory and initialise:</p>
+        <pre><code>cd terraform
+terraform init</code></pre>
+ 
+        <p>Update <code>variables.tf</code> for your environment if needed — the key variables are:</p>
+        <pre><code><span class="comment"># Path to your base qcow2 image</span>
+variable "base_image_path" {
+  default = "/var/lib/libvirt/images/ubuntu24.04.qcow2"
+}
+ 
+<span class="comment"># Username configured during OS installation</span>
+variable "ansible_user" {
+  default = "matt"
+}</code></pre>
+ 
+        <p>You are now ready to run the demo as shown at the top of this article!</p>
+    </div>
+ 
+    <hr class="section-divider">
+ 
+    <p>Congratulations — you now have a complete infrastructure-as-code solution and playground, self-hosted for free.</p>
+ 
+    <div class="future-box">
+        <strong>🚀 Coming next:</strong> In a future post I plan to extend this lab into a multi-node Kubernetes cluster using kubeadm on the self-hosted virtual machines, providing a more production-like environment than Minikube or kind.
+    </div>
+ 
+    <p>Thanks for reading!</p>
+ 
+</main>
+ 
+<footer>
+    <p>Written by Matthew Bieda &mdash; <a href="https://github.com/MatthewBieda/HomeLabCore">View the code on GitHub</a></p>
+</footer>
+ 
+</body>
+</html>
