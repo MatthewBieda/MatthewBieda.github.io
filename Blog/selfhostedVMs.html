@@ -236,14 +236,14 @@ vm1      ok=2    <span style="color:#6a9955;">changed=0</span>    unreachable=0 
     <div class="step">
         <span class="step-number">2</span>
         <h2>Update your system</h2>
-        <pre><code>apt update &amp;&amp; apt upgrade</code></pre>
+        <pre><code>sudo apt update &amp;&amp; sudo apt upgrade</code></pre>
     </div>
  
     <div class="step">
         <span class="step-number">3</span>
         <h2>Install Ansible</h2>
         <p>The cleanest way is to install with pipx as per the Ansible documentation:</p>
-        <pre><code>apt install pipx
+        <pre><code>sduo apt install pipx
 pipx ensurepath
 pipx install --include-deps ansible</code></pre>
     </div>
@@ -293,7 +293,7 @@ sudo apt-get install terraform</code></pre>
         <p>If this returns <code>vmx</code> (Intel) or <code>svm</code> (AMD), your CPU supports virtualization.</p>
  
         <p>Optionally install the <code>cpu-checker</code> package and check virtualization is enabled at the BIOS level:</p>
-        <pre><code>apt install cpu-checker
+        <pre><code>sudo apt install cpu-checker
 kvm-ok</code></pre>
  
         <p>If output is:</p>
@@ -305,7 +305,7 @@ KVM acceleration can NOT be used</code></pre>
         <p>Try enabling virtualization at the BIOS level.</p>
  
         <p>In this lab we are using Virtual Machine Manager (virt-manager) to configure the base virtual machine image using its GUI. Install it with:</p>
-        <pre><code>apt install virt-manager</code></pre>
+        <pre><code>sudo apt install virt-manager</code></pre>
         <p>Then reboot your system.</p>
  
         <p>In this guide I will use Elementary OS (based on Ubuntu 24 LTS) for the virtual machine, feel free to use whatever distribution you like. Navigate to <a href="https://elementary.io/">https://elementary.io/</a> and download the ISO image (just enter $0 unless you wish to support the project).</p>
