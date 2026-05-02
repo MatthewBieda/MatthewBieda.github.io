@@ -233,10 +233,6 @@ vm1      ok=2    <span style="color:#6a9955;">changed=0</span>    unreachable=0 
         <pre><code>matthew@matthew-ThinkPad-E14-Gen-6:~/infra-lab/terraform$ terraform destroy</code></pre>
     </div>
 
-    <div class="warning-box">
-        <strong>⚠ Note on repeat runs:</strong> Each <code>terraform destroy &amp;&amp; apply</code> cycle provisions a fresh VM with a new SSH host key. If Ansible fails with a host key verification error, run <code>ssh-keygen -R &lt;ip&gt;</code>, or set <code>host_key_checking = False</code> in <code>ansible.cfg</code>.
-    </div>
-
     <hr class="section-divider">
 
  
@@ -415,7 +411,7 @@ variable "ansible_user" {
     <p>Congratulations, you now have a complete infrastructure-as-code solution and playground, self-hosted for free.</p>
  
     <div class="future-box">
-        <strong>Coming next:</strong> In a future post I plan to extend this lab into a multi-node Kubernetes cluster using kubeadm on the self-hosted virtual machines, providing a more production-like environment than Minikube or kind.
+        <strong>Coming next:</strong> In a future post I plan to extend this lab into a multi-node Kubernetes cluster bootstrapped with kubeadm on the self-hosted virtual machines.
     </div>
  
     <p>Thanks for reading!</p>
