@@ -122,16 +122,25 @@ To start using your cluster, you need to run the following as a regular user:
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-You can now join any number of control-plane nodes by running the following as root:
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of control-plane nodes by copying certificate authorities
+and service account keys on each node and then running the following as root:
 
   kubeadm join master:6443 --token ib2x9p.dn0gozchs1covuhp \
-    --discovery-token-ca-cert-hash sha256:e1cd5dc4ac21ea516370f... \
-    --control-plane
+	--discovery-token-ca-cert-hash sha256:e1cd5dc4ac21ea516370f021407301c8bee6df8d859041c825f3888a715bb27b \
+	--control-plane 
 
 Then you can join any number of worker nodes by running the following on each as root:
 
-  kubeadm join master:6443 --token ib2x9p.dn0gozchs1covuhp \
-    --discovery-token-ca-cert-hash sha256:e1cd5dc4ac21ea516370f...</code></pre>
+kubeadm join master:6443 --token ib2x9p.dn0gozchs1covuhp \
+	--discovery-token-ca-cert-hash sha256:e1cd5dc4ac21ea516370f021407301c8bee6df8d859041c825f3888a715bb27b 
 
     <p>Save the join command. If you lose it, regenerate it with <code>kubeadm token create --print-join-command</code> on the master.</p>
 
@@ -176,8 +185,14 @@ kube-scheduler-master            1/1     Running   0          6m28s</span></code
     <pre><code>sudo kubeadm join master:6443 --token &lt;token&gt; --discovery-token-ca-cert-hash sha256:&lt;hash&gt;</code></pre>
 
     <pre><code>[preflight] Running pre-flight checks
+preflight] Reading configuration from the "kubeadm-config" ConfigMap in namespace "kube-system"...
+[preflight] Use 'kubeadm init phase upload-config kubeadm --config your-config-file' to re-upload it.
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/instance-config.yaml"
+[patches] Applied patch of type "application/strategic-merge-patch+json" to target "kubeletconfiguration"
 [kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
 [kubelet-start] Starting the kubelet
+[kubelet-check] Waiting for a healthy kubelet at http://127.0.0.1:10248/healthz. This can take up to 4m0s
 [kubelet-check] The kubelet is healthy after 1.00176137s
 [kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap
 
@@ -233,9 +248,13 @@ nginx        NodePort    10.111.237.212   &lt;none&gt;        80:31760/TCP   15s
     <pre><code><span class="prompt">matt@master</span>:~$ kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.36/deploy/local-path-storage.yaml
 <span class="success">namespace/local-path-storage created
 serviceaccount/local-path-provisioner-service-account created
+role.rbac.authorization.k8s.io/local-path-provisioner-role created
 clusterrole.rbac.authorization.k8s.io/local-path-provisioner-role created
+rolebinding.rbac.authorization.k8s.io/local-path-provisioner-bind created
+clusterrolebinding.rbac.authorization.k8s.io/local-path-provisioner-bind created
 deployment.apps/local-path-provisioner created
-storageclass.storage.k8s.io/local-path created</span>
+storageclass.storage.k8s.io/local-path created
+configmap/local-path-config created</span>
 
 <span class="prompt">matt@master</span>:~$ kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
@@ -280,16 +299,46 @@ spec:
 NAME       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 <span class="success">test-pvc   Bound    pvc-52f23c03-6174-4eb1-bc29-1b8764853c19   1Gi        RWO            local-path     33s</span>
 
+<span class="prompt">matt@master</span>:~$ kubectl get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM              STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+<span class="success">pvc-52f23c03-6174-4eb1-bc29-1b8764853c19   1Gi        RWO            Delete           Bound    default/test-pvc   local-path     <unset>                          28s</span>
+
 <span class="prompt">matt@master</span>:~$ kubectl exec test-pod -- cat /data/test.txt
 <span class="success">hello from persistent storage</span></code></pre>
 
-    <hr>
+<hr>
 
-    <h2>Extension: Load Balancer with MetalLB</h2>
+<h2>Extension: Load Balancer with MetalLB</h2>
 
-    <p>Without a cloud provider, <code>LoadBalancer</code> resources are not supported natively. MetalLB assigns real IPs from a pool on your local network, allowing access from the host without specifying a port number.</p>
+<p>Without a cloud provider, <code>LoadBalancer</code> resources are not supported natively. MetalLB assigns real IPs from a pool on your local network, allowing access from the host without specifying a port number.</p>
 
-    <pre><code><span class="prompt">matt@master</span>:~$ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.15.3/config/manifests/metallb-native.yaml
+<pre><code><span class="prompt">matt@master</span>:~$ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.15.3/config/manifests/metallb-native.yaml
+<span class="success">namespace/metallb-system created
+customresourcedefinition.apiextensions.k8s.io/bfdprofiles.metallb.io created
+customresourcedefinition.apiextensions.k8s.io/bgpadvertisements.metallb.io created
+customresourcedefinition.apiextensions.k8s.io/bgppeers.metallb.io created
+customresourcedefinition.apiextensions.k8s.io/communities.metallb.io created
+customresourcedefinition.apiextensions.k8s.io/configurationstates.metallb.io created
+customresourcedefinition.apiextensions.k8s.io/ipaddresspools.metallb.io created
+customresourcedefinition.apiextensions.k8s.io/l2advertisements.metallb.io created
+customresourcedefinition.apiextensions.k8s.io/servicebgpstatuses.metallb.io created
+customresourcedefinition.apiextensions.k8s.io/servicel2statuses.metallb.io created
+serviceaccount/controller created
+serviceaccount/speaker created
+role.rbac.authorization.k8s.io/controller created
+role.rbac.authorization.k8s.io/pod-lister created
+clusterrole.rbac.authorization.k8s.io/metallb-system:controller created
+clusterrole.rbac.authorization.k8s.io/metallb-system:speaker created
+rolebinding.rbac.authorization.k8s.io/controller created
+rolebinding.rbac.authorization.k8s.io/pod-lister created
+clusterrolebinding.rbac.authorization.k8s.io/metallb-system:controller created
+clusterrolebinding.rbac.authorization.k8s.io/metallb-system:speaker created
+configmap/metallb-excludel2 created
+secret/metallb-webhook-cert created
+service/metallb-webhook-service created
+deployment.apps/controller created
+daemonset.apps/speaker created
+validatingwebhookconfiguration.admissionregistration.k8s.io/metallb-webhook-configuration created</span>
 
 <span class="prompt">matt@master</span>:~$ kubectl get pods -n metallb-system
 NAME                         READY   STATUS    RESTARTS   AGE
@@ -316,7 +365,9 @@ metadata:
   name: default
   namespace: metallb-system</code></pre>
 
-    <pre><code><span class="prompt">matt@master</span>:~$ kubectl apply -f metallb-config.yaml
+<pre><code><span class="prompt">matt@master</span>:~$ kubectl apply -f metallb-config.yaml
+<span class="success">ipaddresspool.metallb.io/default-pool created
+l2advertisement.metallb.io/default created</span>
 
 <span class="prompt">matt@master</span>:~$ kubectl expose deployment nginx --port=80 --type=LoadBalancer --name=nginx-lb
 <span class="success">service/nginx-lb exposed</span>
