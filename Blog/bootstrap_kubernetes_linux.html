@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap a Kubernetes Cluster on Your Laptop</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        main.content {
+            max-width: 860px;
+            margin: 30px auto;
+            padding: 30px 40px;
+        }
+        p { margin: 12px 0; }
+        h2 { margin-top: 36px; }
+        h3 { margin-top: 24px; }
+        pre {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            font-size: inherit;
+        }
+        code {
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+        }
+        .prompt { color: #569cd6; }
+        .success { color: #4ec9b0; }
+        .k8s-ready { color: #4ec9b0; }
+        .k8s-running { color: #4ec9b0; }
+        .k8s-role { color: #569cd6; }
+        .comment { color: #6a9955; }
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 36px 0;
+        }
+        a { color: #2980b9; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Bootstrap a Kubernetes Cluster on Your Laptop | Terraform, Ansible, KVM/libvirt, Kubeadm</h1>
+</header>
+
+<main class="content">
+
+    <p>This is an extension of my previous post: <a href="https://matthewbieda.github.io/Blog/selfhostedVMs.html">Learn Ansible and Terraform for Free: Provision Self-Hosted Virtual Machines with Custom Disk Images on Linux</a>.</p>
+
+    <p>The Terraform configuration has been extended to provision 3 virtual machines, 1 control plane and 2 worker nodes. The Ansible playbook prepares each machine with the prerequisites needed to initialize the cluster with kubeadm and join the worker nodes.</p>
+
+    <hr>
+
+    <h2>Step 1 - Provision and Configure with Terraform and Ansible</h2>
+
+    <p>After running <code>terraform apply</code>, 3 VMs are provisioned and the Ansible inventory is automatically written:</p>
+
+    <pre><code><span class="success">Apply complete! Resources: 7 added, 0 changed, 0 destroyed.</span>
+
+Outputs:
+
+vm_ips = {
+  "master"  = "192.168.122.193"
+  "worker1" = "192.168.122.39"
+  "worker2" = "192.168.122.79"
+}</code></pre>
+
+    <pre><code><span class="prompt">matthew@matthew-ThinkPad-E14-Gen-6</span>:~/infra-lab/terraform$ cat ../ansible/inventory.ini
+[master]
+master ansible_host=192.168.122.193 ansible_user=matt ansible_python_interpreter=/usr/bin/python3
+
+[workers]
+worker1 ansible_host=192.168.122.39 ansible_user=matt ansible_python_interpreter=/usr/bin/python3
+worker2 ansible_host=192.168.122.79 ansible_user=matt ansible_python_interpreter=/usr/bin/python3
+
+[lab:children]
+master
+workers</code></pre>
+
+    <p>Run the Ansible playbook to configure all 3 nodes. It installs containerd, kubelet, kubeadm and kubectl, sets the required kernel parameters, disables swap, and populates <code>/etc/hosts</code> so all nodes can resolve each other by hostname:</p>
+
+    <pre><code><span class="prompt">matthew@matthew-ThinkPad-E14-Gen-6</span>:~/infra-lab/ansible$ ansible-playbook -i inventory.ini playbook.yml
+
+PLAY RECAP *********************************************************************
+<span class="success">master    : ok=21   changed=17   unreachable=0   failed=0   skipped=0
+worker1   : ok=21   changed=17   unreachable=0   failed=0   skipped=0
+worker2   : ok=21   changed=17   unreachable=0   failed=0   skipped=0</span></code></pre>
+
+    <hr>
+
+    <h2>Step 2 - Initialize the Control Plane</h2>
+
+    <p>SSH onto the master node and run <code>kubeadm init</code>. We specify the Flannel pod network CIDR and the control plane endpoint hostname:</p>
+
+    <pre><code><span class="prompt">matthew@matthew-ThinkPad-E14-Gen-6</span>:~$ ssh matt@192.168.122.193
+
+<span class="prompt">matt@master</span>:~$ sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --control-plane-endpoint=master</code></pre>
+
+    <p>On success:</p>
+
+    <pre><code><span class="success">Your Kubernetes control-plane has initialized successfully!</span>
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You can now join any number of control-plane nodes by running the following as root:
+
+  kubeadm join master:6443 --token ib2x9p.dn0gozchs1covuhp \
+    --discovery-token-ca-cert-hash sha256:e1cd5dc4ac21ea516370f... \
+    --control-plane
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+  kubeadm join master:6443 --token ib2x9p.dn0gozchs1covuhp \
+    --discovery-token-ca-cert-hash sha256:e1cd5dc4ac21ea516370f...</code></pre>
+
+    <p>Save the join command. If you lose it, regenerate it with <code>kubeadm token create --print-join-command</code> on the master.</p>
+
+    <p>Set up kubectl for your non-root user:</p>
+
+    <pre><code>mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config</code></pre>
+
+    <hr>
+
+    <h2>Step 3 - Install the CNI Plugin</h2>
+
+    <p>Kubernetes delegates pod networking to CNI (Container Network Interface) plugins, which assign IP addresses to pods and enable cross-node communication. Install Flannel:</p>
+
+    <pre><code><span class="prompt">matt@master</span>:~$ kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+<span class="success">namespace/kube-flannel created
+serviceaccount/flannel created
+clusterrole.rbac.authorization.k8s.io/flannel created
+clusterrolebinding.rbac.authorization.k8s.io/flannel created
+configmap/kube-flannel-cfg created
+daemonset.apps/kube-flannel-ds created</span></code></pre>
+
+    <p>Verify CoreDNS pods are running:</p>
+
+    <pre><code><span class="prompt">matt@master</span>:~$ kubectl get pods -n kube-system
+NAME                             READY   STATUS    RESTARTS   AGE
+<span class="k8s-running">coredns-589f44dc88-dzfql         1/1     Running   0          6m21s
+coredns-589f44dc88-fr6p8         1/1     Running   0          6m21s
+etcd-master                      1/1     Running   0          6m28s
+kube-apiserver-master            1/1     Running   0          6m28s
+kube-controller-manager-master   1/1     Running   0          6m28s
+kube-proxy-45lks                 1/1     Running   0          6m21s
+kube-scheduler-master            1/1     Running   0          6m28s</span></code></pre>
+
+    <hr>
+
+    <h2>Step 4 - Join the Worker Nodes</h2>
+
+    <p>SSH onto each worker node and run the join command from Step 2. Use the version without <code>--control-plane</code>, that flag is only for adding additional control plane nodes in HA setups:</p>
+
+    <pre><code>sudo kubeadm join master:6443 --token &lt;token&gt; --discovery-token-ca-cert-hash sha256:&lt;hash&gt;</code></pre>
+
+    <pre><code>[preflight] Running pre-flight checks
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Starting the kubelet
+[kubelet-check] The kubelet is healthy after 1.00176137s
+[kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap
+
+<span class="success">This node has joined the cluster:
+* Certificate signing request was sent to apiserver and a response was received.
+* The Kubelet was informed of the new secure connection details.</span></code></pre>
+
+    <p>Confirm the complete cluster on the control plane:</p>
+
+    <pre><code><span class="prompt">matt@master</span>:~$ kubectl get nodes
+NAME      STATUS   ROLES           AGE     VERSION
+<span class="k8s-ready">master    Ready</span>    <span class="k8s-role">control-plane</span>   14m     v1.36.0
+<span class="k8s-ready">worker1   Ready</span>    &lt;none&gt;          6m46s   v1.36.0
+<span class="k8s-ready">worker2   Ready</span>    &lt;none&gt;          5m15s   v1.36.0</code></pre>
+
+    <hr>
+
+    <h2>Step 5 - Deploy a Test Workload</h2>
+
+    <p>Create an nginx deployment and check which node it was scheduled on:</p>
+
+    <pre><code><span class="prompt">matt@master</span>:~$ kubectl create deployment nginx --image=nginx
+<span class="success">deployment.apps/nginx created</span>
+
+<span class="prompt">matt@master</span>:~$ kubectl get pods -o wide
+NAME                    READY   STATUS    RESTARTS   AGE   IP           NODE      NOMINATED NODE   READINESS GATES
+<span class="k8s-running">nginx-7f8fbb96d-cpvlv   1/1     Running   0          50s   10.244.2.2   worker2   &lt;none&gt;           &lt;none&gt;</span></code></pre>
+
+    <p>Expose via NodePort and access from the host:</p>
+
+    <pre><code><span class="prompt">matt@master</span>:~$ kubectl expose deployment nginx --port=80 --type=NodePort
+<span class="success">service/nginx exposed</span>
+
+<span class="prompt">matt@master</span>:~$ kubectl get svc
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP   10.96.0.1        &lt;none&gt;        443/TCP        17m
+nginx        NodePort    10.111.237.212   &lt;none&gt;        80:31760/TCP   15s</code></pre>
+
+    <pre><code><span class="prompt">matthew@matthew-ThinkPad-E14-Gen-6</span>:~$ curl 192.168.122.79:31760
+&lt;!DOCTYPE html&gt;
+...
+&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;
+&lt;p&gt;If you see this page, nginx is successfully installed and working.&lt;/p&gt;</code></pre>
+
+    <p>The pod is running on worker2, but the same NodePort works on any node in the cluster. The request is routed correctly regardless of which node you hit.</p>
+
+    <hr>
+
+    <h2>Extension: Persistent Storage</h2>
+
+    <p>By default the cluster has no StorageClass, so PersistentVolumeClaims stay Pending. Install Rancher's local-path-provisioner to enable dynamic provisioning using node-local disk:</p>
+
+    <pre><code><span class="prompt">matt@master</span>:~$ kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.36/deploy/local-path-storage.yaml
+<span class="success">namespace/local-path-storage created
+serviceaccount/local-path-provisioner-service-account created
+clusterrole.rbac.authorization.k8s.io/local-path-provisioner-role created
+deployment.apps/local-path-provisioner created
+storageclass.storage.k8s.io/local-path created</span>
+
+<span class="prompt">matt@master</span>:~$ kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+<span class="prompt">matt@master</span>:~$ kubectl get storageclass
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+<span class="success">local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  38s</span></code></pre>
+
+    <p>Demonstrate with a busybox pod that writes to a PVC:</p>
+
+    <pre><code><span class="comment"># pvc-test.yaml</span>
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+spec:
+  containers:
+    - name: test
+      image: busybox
+      command: ["/bin/sh", "-c", "echo 'hello from persistent storage' > /data/test.txt &amp;&amp; sleep 3600"]
+      volumeMounts:
+        - mountPath: /data
+          name: test-volume
+  volumes:
+    - name: test-volume
+      persistentVolumeClaim:
+        claimName: test-pvc</code></pre>
+
+    <pre><code><span class="prompt">matt@master</span>:~$ kubectl apply -f pvc-test.yaml
+
+<span class="prompt">matt@master</span>:~$ kubectl get pvc
+NAME       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+<span class="success">test-pvc   Bound    pvc-52f23c03-6174-4eb1-bc29-1b8764853c19   1Gi        RWO            local-path     33s</span>
+
+<span class="prompt">matt@master</span>:~$ kubectl exec test-pod -- cat /data/test.txt
+<span class="success">hello from persistent storage</span></code></pre>
+
+    <hr>
+
+    <h2>Extension: Load Balancer with MetalLB</h2>
+
+    <p>Without a cloud provider, <code>LoadBalancer</code> resources are not supported natively. MetalLB assigns real IPs from a pool on your local network, allowing access from the host without specifying a port number.</p>
+
+    <pre><code><span class="prompt">matt@master</span>:~$ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.15.3/config/manifests/metallb-native.yaml
+
+<span class="prompt">matt@master</span>:~$ kubectl get pods -n metallb-system
+NAME                         READY   STATUS    RESTARTS   AGE
+<span class="k8s-running">controller-f59dc4bc7-9fvcs   1/1     Running   0          55s
+speaker-585cf                1/1     Running   0          55s
+speaker-8z8md                1/1     Running   0          55s
+speaker-sklv7                1/1     Running   0          55s</span></code></pre>
+
+    <p>Configure an IP pool from a range that won't conflict with your DHCP leases:</p>
+
+    <pre><code><span class="comment"># metallb-config.yaml</span>
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.122.200-192.168.122.250
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: default
+  namespace: metallb-system</code></pre>
+
+    <pre><code><span class="prompt">matt@master</span>:~$ kubectl apply -f metallb-config.yaml
+
+<span class="prompt">matt@master</span>:~$ kubectl expose deployment nginx --port=80 --type=LoadBalancer --name=nginx-lb
+<span class="success">service/nginx-lb exposed</span>
+
+<span class="prompt">matt@master</span>:~$ kubectl get svc nginx-lb
+NAME       TYPE           CLUSTER-IP       EXTERNAL-IP       PORT(S)        AGE
+<span class="success">nginx-lb   LoadBalancer   10.103.212.226   192.168.122.200   80:32017/TCP   10s</span></code></pre>
+
+    <p>An external IP is assigned from the pool. Access it directly on port 80 from the host:</p>
+
+    <pre><code><span class="prompt">matthew@matthew-ThinkPad-E14-Gen-6</span>:~$ curl 192.168.122.200
+&lt;!DOCTYPE html&gt;
+...
+&lt;h1&gt;Welcome to nginx!&lt;/h1&gt;
+&lt;p&gt;If you see this page, nginx is successfully installed and working.&lt;/p&gt;</code></pre>
+
+    <hr>
+
+    <p>You now have a self-hosted Kubernetes cluster with persistent storage and load balancing running on your laptop. If you want to go further, look into building a high-availability setup with 3 control plane nodes behind HAProxy using stacked etcd.</p>
+
+    <p>Thanks for reading!</p>
+
+</main>
+
+</body>
+</html>
