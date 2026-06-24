@@ -76,7 +76,6 @@
       <p>Firstly, let's connect to our cluster by running the following <code>gcloud</code> command (I have configured gcloud CLI and kubectl in my WSL environment already):</p>
       <img src="ClusterConnection.jpg" alt="Connecting to the cluster via gcloud" />
       <p>Now you can check your updated kube config with <code>kubectl config view</code> and see that the current context now points to the cluster we just deployed.</p>
-      <p>Now if you check the cluster, you can see we have no nodes! And all the system components are scaled down! Well, this is just because we need to provision a workload first.</p>
 
       <h2>Deploying a Sample Workload</h2>
       <p>So let's provision a sample NGINX pod. We'll call it <code>test-pod</code> and use the NGINX image in the default namespace:</p>
