@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <title>GKE Experiments - Day 1: Deploying autopilot cluster</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      code {
+        font-family: "Consolas", "Monaco", monospace;
+        background-color: #eef2f5;
+        color: #2c3e50;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.95em;
+      }
+      pre {
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        padding: 15px;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 15px 0;
+      }
+      pre code {
+        background-color: transparent;
+        color: inherit;
+        padding: 0;
+      }
+      main.content img {
+        max-width: 100%;
+        display: block;
+        margin: 15px 0;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+      }
+      main.content p {
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>GKE Experiments - Day 1: Deploying Autopilot Cluster</h1>
+      <p class="intro">This is the first blog post in a series sharing experiments I will be doing on Google Kubernetes Engine.</p>
+    </header>
+
+    <main class="content">
+      <h2>Autopilot vs. Standard</h2>
+      <p>When provisioning a GKE cluster, the first choice you have to make is whether to choose an Autopilot or Standard cluster. For exploratory workloads and learning environments, I recommend Autopilot. It often works out cheaper for low-utilization workloads because Google manages the underlying node infrastructure for you.</p>
+
+      <h2>Cluster Basics</h2>
+      <p>Simply enter a name and select your region.</p>
+      <img src="ClusterBasics.jpg" alt="Cluster basics configuration screen" />
+
+      <h2>Fleet Registration</h2>
+      <p>This is relevant if you would like to work with a group of clusters. Leave unselected.</p>
+      <img src="FleetRegistration.jpg" alt="Fleet registration configuration screen" />
+
+      <h2>Networking</h2>
+      <p>As recommended, switch to DNS-based control plane access. You can leave the rest of the settings as default, but in practice you would consult with your network engineers to select a specific network and node subnet rather than using the default project VPC.</p>
+      <img src="Networking.jpg" alt="Networking configuration screen" />
+
+      <h2>Advanced Settings</h2>
+      <p>You can leave everything as is, we will explore manual service mesh and ETCD encryption at rest later in this series, rather than using managed services, for learning purposes.</p>
+      <img src="AdvancedSettings.jpg" alt="Advanced settings configuration screen" />
+
+      <h2>Review and Create</h2>
+      <p>Simply verify your changes and create the cluster!</p>
+      <img src="ReviewAndCreate.jpg" alt="Review and create screen" />
+
+      <h2>Checking the Provisioned Cluster</h2>
+      <p>Wait a few minutes for your cluster to be provisioned. Now that the cluster has been provisioned, if you check the workloads you will see that all system resources are scaled down to optimize costs. As soon as we provision a workload, GKE will auto-provision a node for us and we can get up and running.</p>
+      <img src="CheckingCluster.jpg" alt="Checking cluster status" />
+
+      <h2>Connecting to the Cluster</h2>
+      <p>Firstly, let's connect to our cluster by running the following <code>gcloud</code> command (I have configured gcloud CLI and kubectl in my WSL environment already):</p>
+      <img src="ClusterConnection.jpg" alt="Connecting to the cluster via gcloud" />
+      <p>Now you can check your updated kube config with <code>kubectl config view</code> and see that the current context now points to the cluster we just deployed.</p>
+      <p>Now if you check the cluster, you can see we have no nodes! And all the system components are scaled down! Well, this is just because we need to provision a workload first.</p>
+
+      <h2>Deploying a Sample Workload</h2>
+      <p>So let's provision a sample NGINX pod. We'll call it <code>test-pod</code> and use the NGINX image in the default namespace:</p>
+      <pre><code>kubectl run test-pod --image=nginx --namespace=default</code></pre>
+
+      <h3>Inspecting Injected Resources</h3>
+      <p>Looks like we got a warning, Autopilot automatically injected resource requests and limits into our workload.</p>
+      <pre><code>kubectl get pod test-pod -o yaml</code></pre>
+      <img src="InjectedResources.jpg" alt="Injected resource requests and limits" />
+
+      <h3>Adjusting Resource Requests</h3>
+      <p>Well, those seem a little high, so let's lower them. Looks like we are not allowed to edit the resources on a live workload, so let's just kill the pod.</p>
+      <pre><code>kubectl delete pod test-pod --force</code></pre>
+      <p>And do a dry run to output a YAML file we can work with:</p>
+      <pre><code>kubectl run test-pod --image=nginx --namespace=default --dry-run=client -o yaml > test-pod.yaml</code></pre>
+      <p>Let's add a request for 50m CPU and 50Mi memory, just as an estimate of what we might need.</p>
+      <img src="NewManifest.jpg" alt="Edited pod manifest with updated resource requests" />
+
+      <p>Apply the manifest:</p>
+      <pre><code>kubectl apply -f test-pod.yaml</code></pre>
+      <p>Great, looks like our workload was deployed successfully with much more reasonable requests. Now let's check the overall status of the cluster:</p>
+      <img src="ClusterUpAndRunning.jpg" alt="Cluster up and running with node provisioned" />
+      <p>Now we can see that a node has been provisioned, and all of the system components are operating successfully!</p>
+
+      <h2>Verifying the Workload</h2>
+      <p>Let's verify the NGINX workload is running properly.</p>
+      <img src="WorkloadVerification.jpg" alt="Verification of running NGINX workload" />
+      <p>Great! Looks like everything is up and running correctly. In the next post we will look at exposing this workload using ClusterIP, NodePort and LoadBalancer services.</p>
+    </main>
+  </body>
+</html>
